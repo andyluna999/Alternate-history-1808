@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reino de México 1808–1900</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans+Condensed:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name">Reino de México</span>
+      <span class="brand-sub">What if the Mexico City junta of 1808 had survived? A simulated century.</span>
+    </div>
+    <nav class="views" aria-label="Map view">
+      <button type="button" data-view="americas" class="on">Americas</button>
+      <button type="button" data-view="mexico">Mexico</button>
+      <button type="button" data-view="caribbean">Caribbean</button>
+      <button type="button" data-view="europe">Europe</button>
+      <button type="button" data-view="world">World</button>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <section class="map-wrap" id="mapWrap" aria-label="Map">
+      <svg id="map" role="img" aria-label="Political map of the world in the selected year"></svg>
+      <div class="plate" aria-live="polite">
+        <div class="plate-year" id="plateYear">1808</div>
+        <div class="plate-month" id="plateMonth">January</div>
+        <div class="plate-polity"><span class="swatch" id="plateSwatch"></span><span id="platePolity">New Spain</span></div>
+      </div>
+      <div class="map-mode" role="group" aria-label="Map coloring">
+        <button type="button" id="modeHistory" class="on" aria-pressed="true">This history</button>
+        <button type="button" id="modeOdds" aria-pressed="false">Odds across runs</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="headline" id="headline" hidden></div>
+      <div class="tooltip" id="tooltip" hidden></div>
+    </section>
+
+    <aside class="rail">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tabChron" aria-selected="true" data-panel="panelChron">Chronicle</button>
+        <button type="button" role="tab" id="tabOdds" aria-selected="false" data-panel="panelOdds">Odds</button>
+        <button type="button" role="tab" id="tabMex" aria-selected="false" data-panel="panelMex">Kingdom</button>
+        <button type="button" role="tab" id="tabAbout" aria-selected="false" data-panel="panelAbout">Model</button>
+      </div>
+
+      <div class="panel" id="panelChron" role="tabpanel">
+        <div class="forces" id="forces" hidden></div>
+        <label class="check"><input type="checkbox" id="showWorld"> Include background world events</label>
+        <ol class="chron" id="chron"></ol>
+      </div>
+
+      <div class="panel" id="panelOdds" role="tabpanel" hidden>
+        <p class="lede" id="oddsLede">Running simulated histories…</p>
+        <div class="progress"><span id="oddsProgress"></span></div>
+        <h3>Who holds what in <span id="oddsYear">1808</span></h3>
+        <div id="territoryOdds" class="odds-table"></div>
+        <h3>Our timeline's landmarks</h3>
+        <p class="note">How often each event occurred across the runs. A low share means the divergence made it unlikely.</p>
+        <div id="eventOdds" class="odds-table"></div>
+      </div>
+
+      <div class="panel" id="panelMex" role="tabpanel" hidden>
+        <div class="kstat" id="kstat"></div>
+        <h3>Population, millions</h3>
+        <div class="chart" id="popChart"></div>
+        <p class="note">Solid lines: this simulated history. Dashed: census figures from our timeline. The Mexican series covers New Spain proper, without Central America or Cuba.</p>
+        <h3>State of the kingdom</h3>
+        <div id="gauges" class="gauges"></div>
+      </div>
+
+      <div class="panel prose" id="panelAbout" role="tabpanel" hidden>
+        <h3>How the simulation works</h3>
+        <p>History starts on 1 January 1808 with the world as it was. In September the Mexico City junta survives instead of falling to Gabriel de Yermo's coup. From then on, about 230 events are rolled year by year.</p>
+        <p>Each event has a probability that depends on the state of the world. Examples are Mexico's stability, treasury and army; U.S. population and sectional tension; the share of Anglo-American settlers in Texas; and Spain's capacity to send armies overseas. For an event with a window of years, the probability is a yearly hazard. When an event fires, its outcome is sampled by weight, and the outcome changes the state that later events read.</p>
+        <p>Some decisions are small strategic games, such as Havana's planters in 1808, Ferdinand VII in 1814 and Polk in 1846. Their outcome weights come from a quantal-response equilibrium: each side usually picks its better option, but not always. Open one of these events in the Chronicle to see its payoff matrix and the pure Nash equilibrium.</p>
+        <p>Rolls are hashed from the seed, the event and the year. If you rewrite one decision, later history changes only through its consequences. Everything else keeps the same luck.</p>
+        <p><strong>Most likely</strong> mode replaces chance: an event fires once its cumulative probability passes 50%, and it takes its heaviest outcome. The <strong>Odds</strong> tab runs 200 sampled histories with your current choices and reports how often each outcome happened.</p>
+        <p>Far from Mexico, the world mostly follows our timeline. The ripples reach there late, if at all.</p>
+        <h3>Sources</h3>
+        <p>Borders: Natural Earth admin-1 states and provinces (public domain), grouped into historical territories. Population references: the 1810–1900 U.S. censuses; Mexican estimates from Humboldt (1810) and the censuses of 1895 and 1900.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="timebar">
+    <button type="button" class="play" id="play" aria-label="Play">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="M7 4.5v15l12-7.5z"/></svg>
+    </button>
+    <div class="scrub">
+      <svg class="ticks" id="ticks" aria-hidden="true"></svg>
+      <input type="range" id="scrubber" min="1808" max="1900.99" step="any" value="1808" aria-label="Year">
+      <div class="scale"><span>1808</span><span>1830</span><span>1850</span><span>1870</span><span>1900</span></div>
+    </div>
+    <div class="knobs">
+      <label>Speed
+        <select id="speed">
+          <option value="0.25">¼ yr/s</option>
+          <option value="0.5" selected>½ yr/s</option>
+          <option value="1">1 yr/s</option>
+          <option value="2">2 yr/s</option>
+        </select>
+      </label>
+      <div class="seg" role="group" aria-label="Simulation mode">
+        <button type="button" id="sampled" class="on" aria-pressed="true">Sampled</button>
+        <button type="button" id="likely" aria-pressed="false">Most likely</button>
+      </div>
+      <label class="seed">Seed <input type="number" id="seed" value="1808" min="1" max="999999"></label>
+      <button type="button" id="reroll" class="ghost" title="Roll a new seed">New history</button>
+    </div>
+  </footer>
+</div>
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="js/powers.js"></script>
+<script src="js/regions.js"></script>
+<script src="js/places.js"></script>
+<script src="js/model.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/events-americas.js"></script>
+<script src="js/events-world.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
