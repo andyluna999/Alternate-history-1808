@@ -11,6 +11,7 @@
   const nm = (s, p) => AH.powerName(s, p);
   const adj = (p) => AH.ADJ[p] || AH.POWERS[p].name;
   const cult = (p) => AH.CULTURE[p] || 'en';
+  const country = (s, p) => AH.COUNTRY[p] || AH.powerName(s, p);
   const list = (a) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
   const recent = (s, p, n) => s.f['beaten_' + p] && s.y - s.f['beaten_' + p] <= n;
   const germany = (s) => (alive(s, 'GER') ? 'GER' : 'PRU');
@@ -48,7 +49,7 @@
     fx: (s) => { s.set('serfs_freed'); s.P.RUS.stab = clamp(s.P.RUS.stab + 0.05); } });
 
   // ---------------------------------------------------------------- Italy and Germany
-  ev({ id: 'italy', repeat: true, max: 1, win: [1846, 1910], m: 5, place: 'turin', kind: 'war', major: true,
+  ev({ id: 'italy', repeat: true, max: 1, win: [1820, 1920], m: 5, place: 'turin', kind: 'war', major: true,
     when: (s) => alive(s, 'SAR') && !s.f.italy_united,
     p: (s) => (s.P.SAR.takeoff ? 0.04 : 0.012) + (recent(s, 'AUT', 3) ? 0.3 : 0) + 0.06 * clamp(AH.tension(s, 'AUT', 'FRA')),
     title: 'The Italian question',
@@ -90,7 +91,7 @@
       }
     } });
 
-  ev({ id: 'germany', repeat: true, max: 1, win: [1848, 1925], m: 7, place: 'frankfurt', kind: 'war', major: true,
+  ev({ id: 'germany', repeat: true, max: 1, win: [1830, 1930], m: 7, place: 'frankfurt', kind: 'war', major: true,
     when: (s) => alive(s, 'PRU') && !s.f.german_united,
     p: (s) => (s.P.PRU.takeoff ? 0.012 + 0.04 * clamp(s.P.PRU.prod / 3) : 0.006) + (recent(s, 'AUT', 3) ? 0.2 : 0),
     title: 'The German question',
@@ -140,24 +141,6 @@
   // ---------------------------------------------------------------- the Eastern Question
   const BALKAN = [['ROU', 'ROM:United Principalities'], ['SRB', 'SRB:Kingdom of Serbia'], ['SRB_SOUTH', 'SRB:Kingdom of Serbia'], ['BGR', 'BUL:Principality of Bulgaria'],
     ['GR_THESSALY', 'GRE'], ['E_RUMELIA', 'BUL:Bulgaria'], ['DOBRUJA', 'ROM:Romania'], ['GR_CRETE', 'GRE'], ['GR_NORTH', 'GRE'], ['ALB', L('Albania')], ['MKD', 'SRB:Kingdom of Serbia'], ['KOS', 'SRB:Kingdom of Serbia']];
-  ev({ id: 'balkans', repeat: true, win: [1850, 1925], m: 4, place: 'belgrade', kind: 'revolt',
-    when: (s) => BALKAN.some(([k]) => ['OTT', 'SRB'].includes(s.oid(k)) && s.owner(k) !== 'SRB:Kingdom of Serbia'),
-    p: (s) => (alive(s, 'OTT') ? 0.05 + 0.4 * Math.max(0, 0.5 - s.P.OTT.stab) + (recent(s, 'OTT', 2) ? 0.5 : 0) : 0.6),
-    title: 'A Balkan nation breaks free',
-    fx: (s) => {
-      const next = BALKAN.find(([k, o]) => (s.oid(k) === 'OTT' || (k.startsWith('SRB') && s.owner(k) !== o && s.oid(k) === 'SRB')));
-      if (!next) { s.cur.cancel = true; return; }
-      const [k, o] = next;
-      s.own(k, o);
-      if (k === 'SRB') s.own('SRB_SOUTH', o);
-      const leader = s.fig('balkan:' + k, k.startsWith('GR') ? 'el' : k === 'ROU' || k === 'DOBRUJA' ? 'ro' : 'sl', 'Balkan national leader', AH.ownerId(o));
-      s.cur.place = { ROU: 'bucharest', SRB: 'belgrade', BGR: 'plevna', E_RUMELIA: 'plovdiv', GR_THESSALY: 'larissa', GR_CRETE: 'canea', GR_NORTH: 'athens' }[k] || 'belgrade';
-      s.cur.title = `${AH.ownerName(o)} gains ${AH.GROUP_LABEL[k] || AH.KEY_NAMES[k] || k}`;
-      s.cur.text = `A rising led by ${leader} ends Ottoman rule there.`;
-      if (alive(s, 'OTT')) s.P.OTT.stab = clamp(s.P.OTT.stab - 0.03);
-      AH.addTension(s, 'AUT', 'RUS', 0.05);
-    } });
-
   // ---------------------------------------------------------------- wars between two powers
   const warPairs = (s) => {
     const out = [];
@@ -174,28 +157,56 @@
     }
     return out;
   };
-  ev({ id: 'local_war', repeat: true, win: [1850, 1995], m: 8, place: 'plevna', kind: 'war', major: true,
+  ev({ id: 'local_war', repeat: true, win: [1815, 1995], m: 8, place: 'plevna', kind: 'war', major: true,
     when: (s) => !s.f.world_war,
-    p: (s) => { const t = Math.max(0, ...warPairs(s).map((x) => x[2])); return (0.01 + 0.35 * Math.pow(Math.max(0, t - 0.35), 1.5)) * (s.f.nuclear_peace ? 0.3 : 1); },
-    title: 'War',
+    p: (s) => { const t = Math.max(0, ...warPairs(s).map((x) => x[2])); return (0.01 + 0.4 * Math.pow(Math.max(0, t - 0.35), 1.5)) * (s.f.nuclear_peace ? 0.3 : 1); },
+    title: 'Crisis',
     fx: (s) => {
       const pairs = warPairs(s);
       const i = s.pick('lw:pair', pairs.map((x) => Math.pow(x[2], 3)));
       if (i < 0) { s.cur.cancel = true; return; }
-      const [a, b] = pairs[i];
+      let [a, b] = pairs[i];
+      // The challenger is the side with more to gain: claims on the other, or rearming.
+      const claims = (w, l) => AH.claimsOn(s, w, l).length + (s.P[w].doctrine === 'rearmament' || s.P[w].doctrine === 'expansion' ? 0.5 : 0);
+      if (claims(b, a) > claims(a, b)) [a, b] = [b, a];
       const k = a < b ? a + '|' + b : b + '|' + a;
       const [place, war] = AH.FLASHPOINT[k];
       const pa = AH.warOdds(s, [a], [b]);
-      const aWins = s.pick('lw:win', [pa, 1 - pa]) === 0;
-      const [w, l] = aWins ? [a, b] : [b, a];
-      const sev = 0.35 + 0.4 * AH.hash(s.seed, 'lw:sev', s.y);
-      const moved = AH.makePeace(s, [w], [l], sev);
-      const gen = s.fig(`general:${w}:${s.y}`, cult(w), `Commander in the ${war} War`, w);
+      const stake = Math.min(1, 0.3 + 0.3 * AH.claimsOn(s, a, b).length);
+      const demoB = AH.democratic(s, b);
+      const [ri, ci] = AH.playGame(s, 'lw:' + k, {
+        rowPlayer: country(s, a), colPlayer: country(s, b), rows: ['Ultimatum, then war', 'Negotiate'], cols: ['Resist', 'Concede'],
+        P: [
+          [[(3 * pa - 1.4) * stake + 0.2, 3 * (1 - pa) - 1.6], [1.8 * stake + 0.3, 0.5 - 0.2 * s.P[b].stab]],
+          [[0.4, 1.4], [1 * stake + 0.4, 1.1 + (demoB ? 0.1 : 0)]],
+        ],
+      });
       s.f['peace_' + k] = s.y;
-      s.T[k] = Math.max(0.15, s.T[k] - 0.3);
       s.cur.place = place;
-      s.cur.title = `The ${war} War: ${nm(s, w)} defeats ${nm(s, l)}`;
-      s.cur.text = `${AH.leaderOf(s, w)} goes to war with ${nm(s, l)}. ${gen} wins the decisive battle.` + (moved.length ? ` The peace transfers ${list(moved.map((x) => AH.GROUP_LABEL[x] || AH.KEY_NAMES[x] || x))}.` : ' The peace changes little on the map but a great deal in prestige.');
+      if (ri === 0 && ci === 0) {
+        const aWins = s.pick('lw:win', [pa, 1 - pa]) === 0;
+        const [w, l] = aWins ? [a, b] : [b, a];
+        const sev = 0.35 + 0.4 * AH.hash(s.seed, 'lw:sev', s.y);
+        const moved = AH.makePeace(s, [w], [l], sev);
+        const gen = s.fig(`general:${w}:${s.y}`, cult(w), `Commander in the ${war} War`, w);
+        s.T[k] = Math.max(0.15, s.T[k] - 0.3);
+        s.cur.title = `The ${war} War: ${country(s, w)} defeats ${country(s, l)}`;
+        s.cur.text = `${AH.leaderOf(s, a)} sends an ultimatum; ${AH.leaderOf(s, b)} refuses it. ${gen} wins the decisive battle.` + (moved.length ? ` The peace transfers ${list(moved.map((x) => AH.GROUP_LABEL[x] || AH.KEY_NAMES[x] || x))}.` : ' The peace changes little on the map but a great deal in prestige.');
+      } else if (ri === 0 && ci === 1) {
+        const cl = AH.claimsOn(s, a, b).slice(0, 1);
+        s.own(cl, a);
+        s.P[b].stab = clamp(s.P[b].stab - 0.08);
+        AH.addTension(s, a, b, 0.1);
+        s.cur.kind = 'diplomacy';
+        s.cur.title = `${country(s, b)} backs down before ${country(s, a)}`;
+        s.cur.text = `Faced with an ultimatum from ${AH.leaderOf(s, a)}, ${AH.leaderOf(s, b)} yields${cl.length ? ' ' + (AH.GROUP_LABEL[cl[0]] || AH.KEY_NAMES[cl[0]] || cl[0]) : ''} rather than fight. The humiliation will be remembered.`;
+      } else {
+        s.T[k] = Math.max(0.1, s.T[k] - 0.15);
+        s.cur.kind = 'diplomacy';
+        s.cur.major = false;
+        s.cur.title = `A ${war} crisis ends at the conference table`;
+        s.cur.text = `${AH.leaderOf(s, a)} and ${AH.leaderOf(s, b)} step back from war${ci === 1 ? '; a small border adjustment and an indemnity settle it' : ''}.`;
+      }
     } });
 
   // ---------------------------------------------------------------- the general war
@@ -226,7 +237,8 @@
       s.cur.place = fp[0];
       s.cur.title = `${n[0].toUpperCase() + n.slice(1)} begins`;
       s.cur.text = `A crisis on the ${fp[1]} frontier, set off when ${spark} shoots a minister, pulls the alliances in. ${list(A.map((p) => nm(s, p)))} against ${list(B.map((p) => nm(s, p)))}.` +
-        (A.includes('MEX') || B.includes('MEX') ? ` Mexico fights beside ${(A.includes('MEX') ? A : B).filter((p) => p !== 'MEX').map((p) => nm(s, p))[0]}.` : ' Mexico stays neutral and sells oil to both sides.');
+        (A.includes('MEX') || B.includes('MEX') ? ` Mexico fights beside ${(A.includes('MEX') ? A : B).filter((p) => p !== 'MEX').map((p) => nm(s, p))[0]}.` : ' Mexico stays neutral and sells oil to both sides.') +
+        ((s.joinLog || []).filter(([p, d]) => d === 'stays neutral').length ? ` Neutral: ${list(s.joinLog.filter(([, d]) => d === 'stays neutral').map(([p]) => country(s, p)))}.` : '');
       if (A.includes('MEX') || B.includes('MEX')) s.set('at_war');
     } });
 
@@ -249,7 +261,7 @@
       for (const p of a.concat(b)) if (s.P[p]) s.P[p].atWar = false;
       delete s.f.world_war; delete s.f.at_war;
       s.f.last_gw_end = s.y;
-      s.v.decol = clamp(s.v.decol + 0.22);
+      s.v.decol = clamp(s.v.decol + (s.y > 1930 ? 0.22 : 0.1));
       if (W.includes('MEX')) { s.add('mx_stab', 0.05); s.add('gb_mx', 0.05); }
       if (Lo.includes('MEX')) s.add('mx_stab', -0.15);
       const peace = s.fig('peace:' + s.warCount, cult(W[0]), `Host of the peace conference ending ${name}`, W[0]);
@@ -267,9 +279,10 @@
     if (!P || P.dead || p === 'MEX' || p === 'USA') return 0;
     if (s.f['revolution_' + p] && s.y - s.f['revolution_' + p] < 12) return 0;
     const demo = AH.democratic(s, p) ? 0.3 : 1;
-    return demo * (0.003 + 0.12 * Math.max(0, 0.38 - P.stab) + (recent(s, p, 2) ? 0.22 : 0) + ((P.gov === 'monarchy' || P.gov === 'empire') && !P.constitutional && s.y > 1890 ? 0.006 : 0));
+    // Revolutions are contagious: news of one raises the odds everywhere for a year or two.
+    return demo * (0.08 * (s.v.rev_wave || 0) + 0.003 + 0.12 * Math.max(0, 0.38 - P.stab) + (recent(s, p, 2) ? 0.22 : 0) + ((P.gov === 'monarchy' || P.gov === 'empire') && !P.constitutional && s.y > 1890 ? 0.006 : 0));
   };
-  ev({ id: 'revolution', repeat: true, win: [1849, 2000], m: 3, place: 'paris', kind: 'revolt', major: true,
+  ev({ id: 'revolution', repeat: true, win: [1815, 2000], m: 3, place: 'paris', kind: 'revolt', major: true,
     p: (s) => 1 - AH.majorsAlive(s).reduce((q, p) => q * (1 - revHazard(s, p)), 1),
     title: 'Revolution',
     fx: (s) => {
@@ -289,6 +302,7 @@
       const o = s.pick('rev:kind', w);
       const leader = s.fig(`rev:${p}:${s.y}`, cult(p), 'Revolutionary leader', p);
       const a = adj(p);
+      s.v.rev_wave = Math.min(1, (s.v.rev_wave || 0) + 0.7);
       const before = AH.COUNTRY[p] || nm(s, p);
       s.f['revolution_' + p] = s.y;
       if (p === 'QNG') { s.set('china_republic'); P.earliest = Math.min(P.earliest, s.y + 5); }
@@ -359,8 +373,8 @@
   };
   const claimable = (s) => Object.keys(AH.REGION_OF).filter((k) => ['LOCAL', 'NATIVE'].includes(s.oid(k)) || (k === 'EGY' && s.oid(k) === 'EGY' && s.y > 1870) || (s.oid(k) === 'QNG' && ['KOR', 'PRK', 'MNG'].includes(k)))
     .filter((k) => !(s.f['resisted_' + k] && s.y - s.f['resisted_' + k] < 12));
-  const colonialTech = (y) => S((y - 1878) / 7);
-  ev({ id: 'scramble', repeat: true, win: [1840, 1925], m: 6, place: 'leopoldville', kind: 'colonial', bg: true,
+  const colonialTech = (y) => 0.08 + 0.92 * S((y - 1878) / 7);
+  ev({ id: 'scramble', repeat: true, win: [1815, 1925], m: 6, place: 'leopoldville', kind: 'colonial', bg: true,
     p: (s) => Math.min(0.97, 0.04 + 0.95 * colonialTech(s.y)) * (claimable(s).length ? 1 : 0),
     title: 'Empire-building',
     fx: (s) => {
@@ -401,34 +415,11 @@
   // ---------------------------------------------------------------- decolonization
   const colonyList = (s) => AH.COLONY_LIST.filter((k) => k in s.owners && !['LOCAL', 'NATIVE', 'MEX', 'CUB', 'CAF', 'HAI', 'DOM', 'IND', 'PAK', 'IDN'].includes(s.oid(k)) && !['BENGAL', 'MADRAS', 'MARATHA', 'PUNJAB', 'PUNJAB_PK', 'ASSAM', 'SINDH', 'KALAT', 'KASHMIR', 'KASHMIR_PK', 'BGD'].includes(k)
     && !(AH.CORE[s.oid(k)] || []).includes(k) && !['BLZ'].includes(k));
-  ev({ id: 'decolonize', repeat: true, win: [1900, 2000], m: 9, place: 'leopoldville', kind: 'politics', bg: true,
-    p: (s) => (colonyList(s).length ? Math.min(0.97, S(9 * (s.v.decol - 0.5))) : 0),
-    title: 'Independence',
-    fx: (s) => {
-      const cols = colonyList(s);
-      const n = 1 + Math.floor(s.v.decol * 5 * AH.hash(s.seed, 'dc:n', s.y));
-      const freed = [];
-      for (let j = 0; j < n && cols.length; j++) {
-        const k = cols.splice(s.pick('dc' + j, cols.map((c) => (AH.REGION_OF[c] === 'CAS' ? 0.2 : 1))), 1)[0];
-        const from = s.oid(k);
-        const name = AH.KEY_NAMES[k] || AH.GROUP_LABEL[k] || k;
-        s.own(k, k === 'CUB' ? 'CUB:Republic of Cuba' : L(name));
-        const war = ['FRA', 'POR', 'NLD'].includes(from) && AH.hash(s.seed, 'dcw' + k, s.y) < 0.35;
-        const hero = s.fig('indep:' + k, AH.KEY_CULTURE[k] || AH.REGION_CULTURE[AH.REGION_OF[k]] || 'en', `Founding leader of ${name}`, '');
-        freed.push(`${name} ${war ? `wins a war of independence from ${nm(s, from)}` : `becomes independent of ${nm(s, from)}`}, led by ${hero}`);
-        s.cur.place = AH.KEY_PLACE[k] || s.cur.place;
-      }
-      if (!freed.length) { s.cur.cancel = true; return; }
-      s.cur.major = freed.length > 3;
-      s.cur.title = freed.length === 1 ? freed[0].split(', led')[0] : `A wave of independence: ${freed.length} new states`;
-      s.cur.text = freed.map((d) => d + '.').join(' ');
-    } });
-
   ev({ id: 'india', win: [1905, 1980], m: 8, place: 'delhi', kind: 'politics', major: true,
     when: (s) => s.oid('BENGAL') === 'GBR',
-    p: (s) => 0.5 * S(10 * (s.v.decol - 0.55)),
+    p: (s) => 0.4 * S(10 * (s.C.INDIANS.griev - 0.5)) + 0.3 * S(10 * (s.v.decol - 0.6)),
     title: 'India wins independence',
-    text: (s) => `${s.fig('india:leader', 'hi', 'Leader of Indian independence', 'IND')}'s decades of mass non-cooperation make the Raj ungovernable.`,
+    text: (s) => `${s.fig('india:leader', 'hi', 'Leader of Indian independence', 'IND')}'s mass non-cooperation, fed by famine and by exclusion from the civil service, makes the Raj ungovernable (grievance ${s.C.INDIANS.griev.toFixed(2)}).`,
     outcomes: [
       { title: 'Independence and partition', w: 0.55, text: 'The subcontinent is divided along religious lines, amid mass killing and flight.',
         fx: (s) => { s.own(['BENGAL', 'MADRAS', 'MARATHA', 'PUNJAB', 'ASSAM', 'KASHMIR', 'SIKKIM', 'GOA', 'PONDICHERRY'].filter((k) => s.oid(k) === 'GBR' || k === 'KASHMIR'), 'IND'); s.own(['PUNJAB_PK', 'SINDH', 'KALAT', 'KASHMIR_PK', 'BGD'].filter((k) => s.oid(k) === 'GBR'), 'PAK'); s.add('decol', 0.1); } },
@@ -475,12 +466,6 @@
       { title: 'Britain annexes the republics', w: 0.8, fx: (s) => { s.own(['TRANSVAAL', 'ORANGE', 'NATAL', 'CAPE'], 'GBR:Union of South Africa'); } },
       { title: 'The Boers keep their independence', w: 0.2, fx: (s) => AH.addTension(s, 'GBR', germany(s), 0.05) },
     ] });
-  ev({ id: 'irish_free_state', win: [1880, 1960], m: 12, place: 'london', kind: 'politics',
-    when: (s) => s.oid('IRL') === 'GBR',
-    p: (s) => 0.012 + (recent(s, 'GBR', 3) ? 0.3 : 0) + (s.v.decol > 0.3 ? 0.03 : 0),
-    title: 'Ireland wins self-government',
-    text: (s) => `After a rising led by ${s.fig('ireland', 'en', 'Leader of Irish independence', '')}, London concedes an Irish Free State.`,
-    fx: (s) => s.own('IRL', L('Irish Free State')) });
   ev({ id: 'sa_republic', win: [1945, 1995], m: 5, place: 'capetown', kind: 'politics',
     when: (s) => s.owner('CAPE').startsWith('GBR'), p: 0.06,
     title: 'South Africa leaves the empire',
@@ -533,5 +518,5 @@
     p: 0.03,
     title: (s) => `The Great Crash of ${s.y}`,
     text: 'A stock-market collapse becomes a worldwide depression. Trade halves; unemployment soars; extremists gain.',
-    fx: (s) => { for (const p of AH.majorsAlive(s)) { s.P[p].prod *= 0.9; s.P[p].stab = clamp(s.P[p].stab - 0.12); } s.add('mx_fisc', -0.12); s.add('mx_stab', -0.05); } });
+    fx: (s) => { s.f.crash_y = s.y; for (const p of AH.majorsAlive(s)) { s.P[p].prod *= 0.9; s.P[p].stab = clamp(s.P[p].stab - 0.12); } s.add('mx_fisc', -0.12); s.add('mx_stab', -0.05); } });
 })(globalThis.AH = globalThis.AH || {});

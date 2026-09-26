@@ -28,12 +28,14 @@
     const R = P.length, C = P[0].length;
     let p = Array(R).fill(1 / R), q = Array(C).fill(1 / C);
     const soft = (u) => { const m = Math.max(...u); const e = u.map((x) => Math.exp(lambda * (x - m))); const z = e.reduce((a, b) => a + b); return e.map((x) => x / z); };
-    for (let k = 0; k < 300; k++) {
+    for (let k = 0; k < 120; k++) {
       const ur = P.map((row) => row.reduce((a, cell, j) => a + q[j] * cell[0], 0));
       const uc = q.map((_, j) => P.reduce((a, row, i) => a + p[i] * row[j][1], 0));
       const pn = soft(ur), qn = soft(uc);
-      p = p.map((x, i) => 0.5 * x + 0.5 * pn[i]);
-      q = q.map((x, j) => 0.5 * x + 0.5 * qn[j]);
+      let d = 0;
+      p = p.map((x, i) => { const n = 0.5 * x + 0.5 * pn[i]; d += Math.abs(n - x); return n; });
+      q = q.map((x, j) => { const n = 0.5 * x + 0.5 * qn[j]; d += Math.abs(n - x); return n; });
+      if (d < 1e-5) break;
     }
     // Pure-strategy Nash equilibria, found by best-response checks.
     const ne = [];
@@ -58,13 +60,24 @@
     s.dirty = true;
     const hc = (s.heldCount = {});
     for (const k in s.owners) { const o = s.oid(k); hc[o] = (hc[o] || 0) + 1; }
+    // Distinct owner strings (states on the map), with one of their keys.
+    const sc = (s.ownerStr = {});
+    for (const k in s.owners) { const o = s.owners[k]; if (!sc[o]) sc[o] = { n: 0, key: k }; sc[o].n++; }
+    s.dirtyComm = null; // null = recompute all communities
+    s.ownerStrVersion = 1;
     s.own = (keys, owner) => {
       for (const k of [].concat(keys)) {
         if (s.owner(k) === owner) continue;
         const had = k in s.owners ? s.oid(k) : null;
         if (had) hc[had]--;
+        const prevStr = s.owners[k];
+        if (prevStr && sc[prevStr]) { sc[prevStr].n--; if (!sc[prevStr].n) { delete sc[prevStr]; s.ownerStrVersion++; } else if (sc[prevStr].key === k) { for (const kk in s.owners) if (kk !== k && s.owners[kk] === prevStr) { sc[prevStr].key = kk; break; } } }
+        if (!sc[owner]) { sc[owner] = { n: 0, key: k }; s.ownerStrVersion++; }
+        sc[owner].n++;
+        if (s.dirtyComm && AH.KEY_COMMS && AH.KEY_COMMS[k]) for (const c of AH.KEY_COMMS[k]) s.dirtyComm.add(c);
         s.owners[k] = owner;
         oidMap[k] = AH.ownerId(owner);
+        s.ownVersion++;
         hc[oidMap[k]] = (hc[oidMap[k]] || 0) + 1;
         s.dirty = true;
         if (s.cur) s.cur.changes.push([k, owner]);
@@ -92,20 +105,26 @@
     };
     s.count = {};
     if (AH.initWorld) AH.initWorld(s);
+    if (AH.initCommunities) AH.initCommunities(s);
     return s;
   }
   AH.createState = createState;
 
   // Per-year record: territory, variables, names, and a compact view of the great powers.
-  function snapshot(s, y) {
+  function snapshot(s, y, lite) {
+    if (lite) return { y, owners: null, v: null, names: Object.assign({}, s.names), P: null, C: null };
     const P = {};
     for (const p in s.P || {}) {
       const q = s.P[p];
       if (q.dead) continue;
       P[p] = { pop: q.pop, prod: q.prod, stab: q.stab, gov: q.gov, str: AH.strength(s, p), leader: q.leader ? q.leader.title + ' ' + q.leader.name : '' };
     }
+    // Communities under foreign rule: grievance, hardship, segregation, ruler, autonomy.
+    const C = {};
+    for (const id in s.C || {}) { const c = s.C[id]; if (c.ruler || c.griev > 0.02) C[id] = [c.griev, c.hard, c.segr, c.ruler || '', c.auto]; }
+    for (const p in P) P[p].doctrine = s.P[p].doctrine || '';
     // Owners are not copied here; AH.materialize rebuilds them from the log's changes.
-    return { y, owners: null, v: Object.assign({}, s.v), names: Object.assign({}, s.names), P };
+    return { y, owners: null, v: Object.assign({}, s.v), names: Object.assign({}, s.names), P, C };
   }
 
   const text = (t, s) => (typeof t === 'function' ? t(s) : t || '');
@@ -114,25 +133,31 @@
   //   seed    integer
   //   likely  true = "most likely" mode: fire if p >= 0.5, take the heaviest outcome
   //   forces  { eventId: outcomeIndex, or -1 to prevent the event }
-  AH.simulate = function ({ seed = 1, likely = false, forces = {} } = {}) {
+  AH.simulate = function ({ seed = 1, likely = false, forces = {}, lite = false } = {}) {
     const s = createState(seed, likely);
     const years = [];
     const log = [];
     const evs = AH.EVENTS;
+    // Index events by the years they can fire in; scheduled ones are checked separately.
+    if (!AH._buckets || AH._bucketsN !== evs.length) {
+      AH._buckets = {}; AH._sched = evs.filter((e) => e.sched);
+      for (const e of evs) { if (e.sched) continue; const [a, b] = e.win || [e.y, e.y]; for (let y = Math.max(START, a); y <= Math.min(END, b); y++) (AH._buckets[y] = AH._buckets[y] || []).push(e); }
+      AH._bucketsN = evs.length;
+    }
 
     for (let y = START; y <= END; y++) {
       s.y = y;
       if (y > START) AH.drift(s);
       if (AH.worldDrift) AH.worldDrift(s);
-      years.push(snapshot(s, y));
+      if (AH.applyDoctrines) AH.applyDoctrines(s);
+      if (AH.communityDrift) AH.communityDrift(s);
+      years.push(snapshot(s, y, lite));
 
       const due = [];
-      for (const ev of evs) {
+      const cands = (AH._buckets[y] || []).concat(AH._sched.filter((e) => s.sched[e.id] === y));
+      for (const ev of cands) {
         if (s.fired[ev.id] && !ev.repeat) continue;
         if (ev.repeat && ev.max && (s.count[ev.id] || 0) >= ev.max) continue;
-        const scheduled = s.sched[ev.id] === y;
-        const [a, b] = ev.win || [ev.y, ev.y];
-        if (!scheduled && (ev.sched || y < a || y > b)) continue;
         due.push(ev);
       }
       due.sort((e1, e2) => (e1.m || 6) - (e2.m || 6));
@@ -206,7 +231,7 @@
       }
     }
     s.y = END + 1;
-    years.push(snapshot(s, END + 1));
+    years.push(snapshot(s, END + 1, lite));
     return { seed, years, log, fired: s.fired, flags: s.f, people: s.people || [], rulers: s.rulers || {} };
   };
 
@@ -249,7 +274,7 @@
   AH.mcStep = function (mc, count = 10) {
     const nYears = END + 2 - START;
     for (let c = 0; c < count && mc.done < mc.n; c++, mc.done++) {
-      const r = AH.simulate({ seed: mc.seed0 + mc.done * 7919, forces: mc.forces });
+      const r = AH.simulate({ seed: mc.seed0 + mc.done * 7919, forces: mc.forces, lite: true });
       const K = KEY_STRIDE;
       const kidx = (k) => { let i = mc.keyIndex.get(k); if (i === undefined) { i = mc.keys.length; mc.keyIndex.set(k, i); mc.keys.push(k); } return i; };
       const grid = new Uint8Array(nYears * K).fill(255);

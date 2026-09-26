@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
-const FILES = ['powers', 'regions', 'places', 'names', 'model', 'world', 'world-tables', 'engine', 'events-americas', 'events-world', 'events-process', 'events-modern'];
+const FILES = ['powers', 'regions', 'places', 'names', 'model', 'world', 'world-tables', 'communities', 'actors', 'engine', 'events-americas', 'events-world', 'events-process', 'events-modern'];
 for (const f of FILES) vm.runInThisContext(fs.readFileSync(`js/${f}.js`, 'utf8'), { filename: f });
 const AH = globalThis.AH;
 

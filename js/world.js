@@ -35,18 +35,21 @@
   // Rulers alive in 1808, with the year their rule ends. After them, rulers are generated.
   const HIST = {
     GBR: [['George III', 1820], ['George IV', 1830], ['William IV', 1837]],
-    FRA: [['Napoleon I', 1815], ['Louis XVIII', 1824], ['Charles X', 1830], ['Louis-Philippe', 1848]],
+    FRA: [['Napoleon I', 1860]], // how his reign ends is decided by the Napoleonic events
     PRU: [['Frederick William III', 1840], ['Frederick William IV', 1858], ['Wilhelm I', 1882]],
-    AUT: [['Francis I', 1835], ['Ferdinand I', 1848]],
+    AUT: [['Francis I', 1835], ['Ferdinand I', 1860]],
     RUS: [['Alexander I', 1825], ['Nicholas I', 1855]],
     OTT: [['Mahmud II', 1839]],
     ESP: [['Ferdinand VII', 1833]],
     SAR: [['Victor Emmanuel I', 1821], ['Charles Felix', 1831], ['Charles Albert', 1849]],
-    USA: [['Thomas Jefferson', 1809], ['James Madison', 1817], ['James Monroe', 1825], ['John Quincy Adams', 1829], ['Andrew Jackson', 1837], ['Martin Van Buren', 1841], ['John Tyler', 1845], ['James K. Polk', 1849]],
+    USA: [['Thomas Jefferson', 1809], ['James Madison', 1817], ['James Monroe', 1825]],
     MEX: [['José de Iturrigaray', 1815]],
     JPN: [['Kōkaku', 1817], ['Ninkō', 1846], ['Kōmei', 1867]],
     QNG: [['the Jiaqing Emperor', 1820], ['the Daoguang Emperor', 1850]],
   };
+  const US_CONTENDERS = [['John Quincy Adams', 1767], ['Andrew Jackson', 1767], ['Henry Clay', 1777], ['John C. Calhoun', 1782], ['William H. Crawford', 1772], ['Daniel Webster', 1782],
+    ['Martin Van Buren', 1782], ['William Henry Harrison', 1773], ['John Tyler', 1790], ['James K. Polk', 1795], ['Lewis Cass', 1782], ['Zachary Taylor', 1784], ['Winfield Scott', 1786],
+    ['Thomas Hart Benton', 1782], ['James Buchanan', 1791], ['Millard Fillmore', 1800], ['Sam Houston', 1793], ['William Seward', 1801], ['Stephen Douglas', 1813]].filter((c) => c[1] <= 1808);
   const REGNAL = {
     GBR: ['Charlotte', 'Frederick', 'Edward', 'Augusta', 'Albert', 'George', 'William', 'Mary', 'Alfred', 'Henry'],
     FRA: ['Louis', 'Henri', 'Charles', 'Philippe', 'Napoléon'],
@@ -129,6 +132,14 @@
     const monarchy = P.gov === 'monarchy' || P.gov === 'empire';
     const tag = `leader:${p}:${s.y}:${(s.rulers[p] || []).length}`;
     if (forcedName) { name = forcedName[0]; until = forcedName[1]; }
+    else if (p === 'USA' && s.y < 1861 && !P.hist.length) {
+      // Presidents after Monroe come from politicians alive in 1808; who wins is contingent.
+      const used = new Set((s.rulers.USA || []).map((r) => r.name));
+      const pool = US_CONTENDERS.filter(([n, b]) => !used.has(n) && s.y - b >= 35 && s.y - b <= 70);
+      const pick = pool.length ? pool[Math.floor(AH.hash(s.seed, tag, 3) * pool.length)] : [AH.makeName(s, tag, 'en')];
+      name = pick[0];
+      until = s.y + (AH.hash(s.seed, tag, 4) < 0.45 ? 8 : 4);
+    }
     else if (P.hist.length && P.hist[0][1] > s.y) { [name, until] = P.hist.shift(); }
     else if (monarchy && REGNAL[p]) {
       const base = REGNAL[p][Math.floor(AH.hash(s.seed, tag, 3) * REGNAL[p].length)];
@@ -205,14 +216,16 @@
     }
     // Rivalries relax toward a structural baseline: lost provinces, shared
     // borders, naval races and ideology keep them from ever reaching zero.
+    // (Recomputed every other year, with a double step, to save time.)
     const ms = AH.majorsAlive(s);
-    for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) {
+    if (y % 2 === 0) for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) {
       const a = ms[i], b = ms[j], k = key2(a, b);
       const base = AH.baseTension(s, a, b);
       const cur = s.T[k] || 0;
-      s.T[k] = clamp(cur + (cur > base ? 0.012 : 0.03) * (base - cur));
+      s.T[k] = clamp(cur + (cur > base ? 0.07 : 0.06) * (base - cur));
     }
-    s.v.decol = clamp(s.v.decol + (y > 1900 ? 0.006 : 0));
+    s.v.decol = clamp(s.v.decol + (y > 1900 ? 0.003 : 0));
+    s.v.rev_wave = (s.v.rev_wave || 0) * 0.45;
   };
 
   // ---- rivalry baseline
@@ -291,12 +304,17 @@
       // Colonies change hands in proportion to how badly the war went.
       for (const k of AH.colonies(s, l)) {
         if (AH.hash(s.seed, 'col' + k, s.y) > 0.25 * severity) continue;
-        const w = wOrder[Math.floor(AH.hash(s.seed, 'colw' + k, s.y) * wOrder.length)];
-        if (AH.alive(s, w) && !['USA', 'MEX'].includes(w) || AH.hash(s.seed, 'colx' + k, s.y) < 0.3) { s.own(k, w); moved.push(k); }
+        // Only winners with a navy and an interest in that region take it over.
+        const region = AH.REGION_OF[k];
+        const fit = wOrder.filter((w) => AH.alive(s, w) && s.P[w].takeoff && (region ? ((AH.AFFINITY[w] || {})[region] || 0) >= 1 : ['GBR', 'FRA', 'USA', 'MEX', 'ESP'].includes(w)));
+        if (!fit.length) continue;
+        const w = fit[Math.floor(AH.hash(s.seed, 'colw' + k, s.y) * fit.length)];
+        s.own(k, w); moved.push(k);
       }
       const P = s.P[l];
       if (P) { P.stab = clamp(P.stab - 0.3 * severity); P.mil = clamp(P.mil - 0.2); s.f['beaten_' + l] = s.y; }
-      for (const w of winners) AH.addTension(s, w, l, 0.25 * severity);
+      // Revanche falls on the powers that actually took land.
+      for (const w of winners) AH.addTension(s, w, l, moved.some((k) => s.oid(k) === w) ? 0.2 * severity : 0.05);
     }
     for (const w of winners) if (s.P[w]) s.P[w].stab = clamp(s.P[w].stab + 0.08);
     return moved;
@@ -314,26 +332,6 @@
     return out;
   };
 
-  // ---- blocs for a general war
-  AH.formBlocs = function (s) {
-    const ms = AH.majorsAlive(s).filter((p) => AH.strength(s, p) > 0);
-    let best = null, bestScore = 0;
-    for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length; j++) {
-      const a = ms[i], b = ms[j];
-      const sc = AH.tension(s, a, b) * Math.pow(Math.min(AH.strength(s, a), AH.strength(s, b)), 0.3);
-      if (sc > bestScore) { bestScore = sc; best = [a, b]; }
-    }
-    if (!best) return null;
-    const A = [best[0]], B = [best[1]];
-    const rest = ms.filter((p) => !best.includes(p)).sort((a, b) => AH.strength(s, b) - AH.strength(s, a));
-    for (const p of rest) {
-      let ha = A.reduce((t, x) => t + AH.tension(s, p, x), 0), hb = B.reduce((t, x) => t + AH.tension(s, p, x), 0);
-      // Standing friendships.
-      if (p === 'MEX' && s.v.gb_mx > 0.45) { if (A.includes('GBR')) hb += 0.4; if (B.includes('GBR')) ha += 0.4; }
-      if (p === 'USA' && s.v.gb_mx > 0.45 && (A.includes('MEX') || B.includes('MEX'))) { if (A.includes('MEX')) ha += 0.2; else hb += 0.2; }
-      if (Math.max(ha, hb) < 0.3 + 0.2 * AH.hash(s.seed, 'neutral' + p, s.y)) continue;
-      (ha > hb ? B : A).push(p);
-    }
-    return [A, B];
-  };
+  // Keys that `w` claims and `l` holds.
+  AH.claimsOn = (s, w, l) => (CLAIMS[w + '>' + l] || []).filter((k) => s.oid(k) === l);
 })(globalThis.AH = globalThis.AH || {});

@@ -38,7 +38,7 @@
   ev({ id: 'junta', y: 1808, m: 9, place: 'mexico', kind: 'politics', major: true,
     title: 'The Mexico City junta holds',
     text: "Viceroy Iturrigaray, backed by the ayuntamiento, Primo de Verdad, Azcárate and Talamantes, and by enough creole officers and clergy to deter Gabriel de Yermo's merchant coup, convenes a governing junta. It swears loyalty to the captive Ferdinand VII and begins to govern New Spain as a de facto sovereign kingdom.",
-    fx: (s) => { s.own(AH.NEW_SPAIN.filter((k) => s.oid(k) === 'ESP'), 'MEX'); s.name('MEX', 'Governing Junta of New Spain'); s.add('sa_mom', 0.08); } });
+    fx: (s) => { s.own(AH.NEW_SPAIN.filter((k) => s.oid(k) === 'ESP'), 'MEX'); s.name('MEX', 'Governing Junta of New Spain'); s.add('sa_mom', 0.08); s.add('esp_resist', -0.1); } });
 
   ev({ id: 'guatemala', win: [1808, 1812], m: 11, place: 'guatemala', kind: 'politics',
     p: (s) => 0.7 + 0.2 * s.v.mx_stab,
@@ -65,7 +65,7 @@
         fx: (s) => { s.own('CUB', 'MEX'); s.add('cu_unrest', 0.15); } },
     ] });
 
-  ev({ id: 'santo_domingo', y: 1809, m: 7, place: 'santodomingo', kind: 'war',
+  ev({ id: 'santo_domingo', y: 1809, m: 7, p: (s) => 0.5 + 0.3 * s.v.gb_chest, place: 'santodomingo', kind: 'war',
     title: 'Spain retakes Santo Domingo',
     text: 'Creole planters, helped by a British squadron, expel the French garrison and return the eastern half of Hispaniola to Spain.',
     fx: (s) => s.own('DOM', 'ESP') });
@@ -74,7 +74,7 @@
     p: (s) => 0.45 + 0.3 * s.v.mx_fisc,
     title: 'Anglo-Mexican commercial treaty',
     text: 'Canning needs silver to pay for the war in Spain and allies against Napoleon. London signs a trade treaty with the junta, formally "in the name of Ferdinand VII": Mexican silver for British goods, credit and naval protection.',
-    fx: (s) => { s.set('gb_trade'); s.add('gb_mx', 0.3); s.add('mx_fisc', 0.08); s.add('mx_stab', 0.04); } });
+    fx: (s) => { s.set('gb_trade'); s.add('gb_mx', 0.3); s.add('mx_fisc', 0.08); s.add('mx_stab', 0.04); s.add('gb_chest', 0.25); s.add('coalition', 0.08); } });
 
   ev({ id: 'quito', y: 1809, m: 8, place: 'quito', kind: 'revolt',
     title: 'Quito proclaims a junta',
@@ -114,7 +114,7 @@
     text: 'A constituent congress drafted by Talamantes and Azcárate adopts a charter: a limited monarchy "while the lawful king is captive," provincial deputations, and a free press.',
     fx: (s) => { s.set('constitution'); s.add('mx_stab', 0.08); } });
 
-  ev({ id: 'paraguay', y: 1811, m: 5, place: 'asuncion', kind: 'revolt',
+  ev({ id: 'paraguay', win: [1811, 1815], m: 5, p: 0.5, when: (s) => s.oid('PRY') === 'ESP', place: 'asuncion', kind: 'revolt',
     title: 'Paraguay goes its own way',
     text: 'Asunción rejects both Buenos Aires and Spain.',
     fx: (s) => s.own('PRY', 'PAR') });
@@ -251,11 +251,7 @@
     title: 'Independence declared at Tucumán',
     text: 'The United Provinces of South America declare full independence from Spain.' });
 
-  ev({ id: 'java_back', y: 1816, m: 8, place: 'batavia', kind: 'treaty', bg: true,
-    title: 'Java and Suriname return to the Dutch',
-    fx: (s) => { s.own('IDN', 'NLD:Dutch East Indies'); s.own('SUR', 'NLD'); } });
-
-  ev({ id: 'cisplatina', y: 1817, m: 1, place: 'montevideo', kind: 'war',
+  ev({ id: 'cisplatina', win: [1815, 1825], m: 1, p: 0.15, when: (s) => ['ESP', 'LOCAL', 'ARG'].includes(s.oid('URY')), place: 'montevideo', kind: 'war',
     title: 'Portugal occupies the Banda Oriental',
     text: 'Lecor\'s Luso-Brazilian army takes Montevideo; Artigas retreats into the interior.',
     fx: (s) => s.own('URY', 'POR:Cisplatina (Portuguese Brazil)') });
@@ -301,7 +297,7 @@
       { title: 'Deadlock; Sabine line held under protest', text: 'Washington refuses to renounce its claim. The Sabine stays the de facto line, and the frontier stays tense.', fx: (s) => { s.set('border_tension'); } },
     ] });
 
-  ev({ id: 'oregon_joint', y: 1818, m: 10, place: 'ftvancouver', kind: 'treaty',
+  ev({ id: 'oregon_joint', win: [1815, 1830], m: 10, p: 0.3, place: 'ftvancouver', kind: 'treaty',
     title: 'Joint occupation of the Oregon Country',
     text: 'The Anglo-American Convention of 1818 fixes the 49th parallel east of the Rockies and leaves Oregon open to both.',
     fx: (s) => s.own(['OREGON', 'CA-BC'], 'JOINT:Oregon Country (U.S.–British joint occupation)') });
@@ -335,12 +331,12 @@
     text: 'Prince Pedro refuses to return to Lisbon and proclaims Brazil an empire.',
     fx: (s) => { s.own('BRA', 'BRA'); s.take('URY', 'POR', 'BRA:Cisplatina (Brazil)'); } });
 
-  ev({ id: 'haiti_unify', y: 1822, m: 2, place: 'santodomingo', kind: 'war',
+  ev({ id: 'haiti_unify', win: [1818, 1830], m: 2, p: 0.15, when: (s) => ['ESP', 'LOCAL'].includes(s.oid('DOM')), place: 'santodomingo', kind: 'war',
     title: 'Boyer unites Hispaniola',
     text: 'Haitian troops occupy Santo Domingo and abolish slavery there. The island is united for 22 years.',
     fx: (s) => s.own('DOM', 'HAI') });
 
-  ev({ id: 'monroe', y: 1823, m: 12, place: 'washington', kind: 'diplomacy',
+  ev({ id: 'monroe', win: [1818, 1835], m: 12, p: 0.15, place: 'washington', kind: 'diplomacy',
     title: 'The Monroe Doctrine',
     text: 'Monroe warns Europe off the hemisphere. In Mexico City, the Congress replies that the hemisphere\'s oldest independent crown needs no guardian.',
     fx: (s) => s.set('monroe') });
@@ -364,7 +360,7 @@
 
   ev({ id: 'cam_secession', win: [1822, 1850], m: 7, place: 'guatemala', kind: 'revolt',
     when: (s) => mex(s, 'GTM'),
-    p: (s) => 0.01 + 0.2 * Math.max(0, s.v.cam_tension - 0.4) + 0.08 * Math.max(0, 0.45 - s.v.mx_stab),
+    p: (s) => 0.01 + 0.2 * Math.max(0, s.v.cam_tension - 0.4) + 0.08 * Math.max(0, 0.45 - s.v.mx_stab) + 0.1 * Math.max(0, s.C.CENTRAL_AMERICANS.griev - 0.35),
     title: 'Central America secedes',
     text: 'Guatemala City\'s merchants and San Salvador\'s liberals, tired of paying for Mexico City\'s army, declare the United Provinces of Central America.',
     otl: 'In our timeline Central America broke away in 1823, after Iturbide\'s empire fell, and its federation collapsed into five republics by 1841.',
@@ -445,7 +441,7 @@
   // ------------------------------------------------------------------ Texas, Yucatán, the Plains
   ev({ id: 'texas_revolt', win: [1830, 1848], m: 3, place: 'sanantonio', kind: 'revolt', major: true,
     when: (s) => mex(s, 'US-TX'),
-    p: (s) => 0.4 * S(9 * (s.v.tx_anglo - 0.55) - 7 * (s.v.mx_mil - 0.4) + (s.f.centralism ? 1 : 0) - (s.f.tx_autonomy ? 2 : 0)),
+    p: (s) => 0.4 * S(9 * (s.v.tx_anglo - 0.55) - 7 * (s.v.mx_mil - 0.4) + (s.f.centralism ? 1 : 0) - (s.f.tx_autonomy ? 2 : 0) + 4 * (s.C.ANGLO_TEXANS.griev - 0.3)),
     title: 'Revolt in Texas',
     text: 'Anglo-Texan colonists, protesting centralism, customs duties and the ban on slavery, rise at Gonzales and besiege San Antonio.',
     otl: 'In our timeline Texas won independence at San Jacinto in 1836 and joined the United States in 1845.',
@@ -465,14 +461,14 @@
 
   ev({ id: 'yucatan', win: [1838, 1850], m: 3, place: 'merida', kind: 'revolt',
     when: (s) => mex(s, 'YUCATAN'),
-    p: (s) => 0.02 + 0.2 * Math.max(0, 0.5 - s.v.mx_stab) + (s.f.centralism ? 0.04 : 0),
+    p: (s) => 0.02 + 0.2 * Math.max(0, 0.5 - s.v.mx_stab) + (s.f.centralism ? 0.04 : 0) + 0.15 * Math.max(0, s.C.MAYA.griev - 0.4),
     title: 'Yucatán secedes',
     text: 'Mérida\'s henequen planters, angered by tariffs and conscription, declare the Republic of Yucatán.',
     otl: 'In our timeline Yucatán was independent from 1841 to 1848 and rejoined Mexico to get help against the Maya rising.',
     fx: (s) => s.own(['YUCATAN', 'QROO'], 'YUC') });
 
   ev({ id: 'caste_war', win: [1847, 1849], m: 7, place: 'merida', kind: 'revolt', major: true,
-    p: (s) => (s.oid('YUCATAN') === 'YUC' ? 0.7 : 0.25 + 0.2 * (1 - s.v.mx_stab)),
+    p: (s) => (s.oid('YUCATAN') === 'YUC' ? 0.7 : 0.1 + 0.2 * (1 - s.v.mx_stab) + 0.4 * s.C.MAYA.griev),
     title: 'The Caste War of Yucatán',
     text: 'Maya peasants, squeezed off their land by sugar and henequen, rise at Tepich and nearly take Mérida.',
     otl: 'In our timeline the Caste War began in 1847; the Maya state of Chan Santa Cruz held out in the east until 1901.',
@@ -508,10 +504,10 @@
     when: (s) => mex(s, 'US-CA') && !s.f.mxus_war && s.v.us_expan > 0.45,
     p: (s) => 0.2 + 0.4 * s.v.us_expan + (s.f.border_tension ? 0.2 : 0),
     title: 'Manifest destiny meets the Mexican frontier',
-    text: 'President Polk wants San Francisco Bay. He can offer to buy California or provoke a war on the border.',
+    text: (s) => `${AH.leaderOf(s, 'USA')} wants San Francisco Bay. He can offer to buy California or provoke a war on the border.`,
     otl: 'In our timeline the Mexican–American War (1846–48) cost Mexico half its territory.',
     game: {
-      rowPlayer: 'Washington (Polk)', colPlayer: 'Mexico', rows: ['Force the issue (war)', 'Offer to buy'], cols: ['Refuse and mobilize', 'Sell the far north'],
+      rowPlayer: 'Washington', colPlayer: 'Mexico', rows: ['Force the issue (war)', 'Offer to buy'], cols: ['Refuse and mobilize', 'Sell the far north'],
       payoffs: (s) => {
         const pw = AH.clamp(0.25 + 0.3 * (s.v.us_pop / s.v.mx_pop - 1) - 0.35 * s.v.mx_mil - 0.3 * s.v.gb_mx + (s.f.tx_lost ? 0.1 : 0));
         s.v.pw = pw;
@@ -525,7 +521,7 @@
     outcomes: [
       { title: 'War: U.S. troops cross the Rio Grande', kind: 'war', place: 'monterrey', text: 'Taylor marches on Monterrey; the Pacific Squadron lands at Monterey.', fx: (s) => { s.set('mxus_war'); s.set('at_war'); s.after(2, 'mxus_peace'); s.add('us_sect', 0.05); } },
       { title: 'Mexico sells Alta California and New Mexico', place: 'mexico', text: 'A bankrupt treasury accepts $40 million for the far north. Riots follow in Mexico City.', fx: (s) => { s.own(['US-CA', 'NEWMEX', 'GBASIN'], 'USA'); s.add('mx_stab', -0.15); s.add('mx_fisc', 0.2); s.set('cession'); s.add('us_sect', 0.1); } },
-      { title: 'Rebuffed; an armed peace', text: 'Mexico refuses to sell. London warns Washington that California is not for sale. Polk turns to Oregon.', fx: (s) => { s.set('cold_peace'); s.add('gb_mx', 0.1); s.set('gb_alliance'); } },
+      { title: 'Rebuffed; an armed peace', text: 'Mexico refuses to sell. London warns Washington that California is not for sale. The President turns to Oregon.', fx: (s) => { s.set('cold_peace'); s.add('gb_mx', 0.1); s.set('gb_alliance'); } },
     ] });
 
   ev({ id: 'mxus_peace', sched: true, m: 2, place: 'mexico', kind: 'treaty', major: true,
@@ -578,17 +574,17 @@
   usOrg('iowa', 1838, 'US-IA', 'Iowa Territory organized', 'stlouis');
   usOrg('minnesota', 1849, 'US-MN', 'Minnesota Territory organized', 'stlouis');
 
-  ev({ id: 'missouri', y: 1820, m: 3, place: 'washington', kind: 'politics',
+  ev({ id: 'missouri', win: [1818, 1825], m: 3, p: 0.35, place: 'washington', kind: 'politics',
     title: 'The Missouri Compromise',
     text: 'Missouri enters as a slave state, Maine as free; slavery is barred north of 36°30′ in the Louisiana Purchase.',
     fx: (s) => s.add('us_sect', 0.05) });
 
-  ev({ id: 'removal', y: 1830, m: 5, place: 'washington', kind: 'politics',
+  ev({ id: 'removal', win: [1825, 1845], m: 5, p: 0.12, place: 'washington', kind: 'politics',
     title: 'The Indian Removal Act',
     text: 'The Cherokee, Creek, Chickasaw, Choctaw and Seminole are forced west along the Trail of Tears to Indian Territory.',
     fx: (s) => s.own('US-OK', 'NATIVE:Indian Territory (Five Tribes)') });
 
-  ev({ id: 'nullification', y: 1832, m: 11, place: 'charleston', kind: 'politics',
+  ev({ id: 'nullification', win: [1825, 1845], m: 11, p: 0.06, place: 'charleston', kind: 'politics',
     title: 'The Nullification Crisis', text: 'South Carolina declares federal tariffs void; Jackson threatens force.', fx: (s) => s.add('us_sect', 0.03) });
 
   ev({ id: 'kansas_nebraska', win: [1850, 1856], m: 5, place: 'lawrence', kind: 'politics', major: true,
@@ -804,7 +800,7 @@
   ev({ id: 'klondike', win: [1880, 1910], m: 8, p: 0.08, place: 'klondike', kind: 'econ', title: 'Klondike gold', text: 'Gold on Bonanza Creek draws 100,000 stampeders north.' });
 
   // ------------------------------------------------------------------ Caribbean, 1840–1900
-  ev({ id: 'dominican', y: 1844, m: 2, place: 'santodomingo', kind: 'revolt',
+  ev({ id: 'dominican', win: [1835, 1865], m: 2, p: 0.07, place: 'santodomingo', kind: 'revolt',
     when: (s) => s.oid('DOM') === 'HAI',
     title: 'Dominican independence', text: 'La Trinitaria expels the Haitians.', fx: (s) => s.own('DOM', 'DOM') });
   ev({ id: 'dom_spain', y: 1861, m: 3, place: 'santodomingo', kind: 'politics',
@@ -888,8 +884,8 @@
     ] });
 
   // ------------------------------------------------------------------ South America, late century
-  ev({ id: 'falklands', y: 1833, m: 1, place: 'buenosaires', kind: 'colonial', bg: true, title: 'Britain seizes the Falklands', fx: (s) => s.own('FLK', 'GBR') });
-  ev({ id: 'magallanes', y: 1843, m: 9, place: 'puntaarenas', kind: 'colonial', bg: true, title: 'Chile founds Fuerte Bulnes on the Strait of Magellan', fx: (s) => s.own('MAGALLANES', 'CHL') });
+  ev({ id: 'falklands', win: [1825, 1850], m: 1, p: 0.06, place: 'buenosaires', kind: 'colonial', bg: true, title: 'Britain seizes the Falklands', fx: (s) => s.own('FLK', 'GBR') });
+  ev({ id: 'magallanes', win: [1835, 1865], m: 9, p: 0.06, place: 'puntaarenas', kind: 'colonial', bg: true, title: 'Chile founds Fuerte Bulnes on the Strait of Magellan', fx: (s) => s.own('MAGALLANES', 'CHL') });
   ev({ id: 'paraguayan_war', win: [1850, 1885], m: 12, place: 'humaita', kind: 'war', p: 0.05,
     title: 'The War of the Triple Alliance', text: (s) => `Paraguay under Marshal ${s.fig('paraguay', 'es', 'Dictator of Paraguay', 'PAR')} fights Brazil, Argentina and Uruguay; it loses perhaps half its population.` });
   ev({ id: 'pacific_war', win: [1879, 1883], m: 2, place: 'antofagasta', kind: 'war', major: true, p: 0.7,

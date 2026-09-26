@@ -38,7 +38,7 @@
 
   function startMonteCarlo() {
     clearTimeout(S.mcTimer);
-    S.mc = AH.mcStart({ n: 120, forces: S.forces });
+    S.mc = AH.mcStart({ n: 80, forces: S.forces });
     S.oddsCache = {};
     const step = () => {
       const done = AH.mcStep(S.mc, 3);
@@ -58,7 +58,7 @@
     if (key !== lastRenderKey) {
       map.update(owners, names, { animate });
       lastRenderKey = key;
-      if (S.mapMode === 'odds') applyFillMode();
+      if (S.mapMode !== 'history') applyFillMode();
       renderPlate(t, owners, names);
       renderMarkers(t);
       renderHeadline(t);
@@ -122,6 +122,10 @@
   }
 
   function renderLegend(owners) {
+    if (S.mapMode === 'tension') {
+      $('legend').innerHTML = `<span><i class="ramp" style="background:linear-gradient(90deg, ${tensionRamp(0)}, ${tensionRamp(0.35)}, ${tensionRamp(0.7)})"></i></span><span>Grievance of peoples ruled by others in ${Math.floor(S.t)}: calm → separatist crisis likely. Uncolored: self-ruled.</span>`;
+      return;
+    }
     if (S.mapMode === 'odds') {
       $('legend').innerHTML = `<span><i class="ramp" style="background:linear-gradient(90deg, ${map.colorOf('LOCAL')}, ${map.colorOf('MEX')})"></i></span><span>Color: most likely owner in ${Math.floor(S.t)}. Paler: less certain.</span>`;
       return;
@@ -296,8 +300,17 @@
     }
     return c[key];
   }
+  function snapAt(t) { return S.run.years[Math.min(AH.END, Math.floor(t)) - AH.START]; }
+  const tensionRamp = (g) => d3.interpolateRgb(map.colorOf('LOCAL'), '#b3261e')(Math.min(1, 0.08 + 1.3 * g));
+  function tensionFill(key) {
+    const C = snapAt(S.t).C || {};
+    const ids = AH.KEY_COMMS[key] || [];
+    let g = -1;
+    for (const id of ids) if (C[id] && C[id][3]) g = Math.max(g, C[id][0]);
+    return g < 0 ? map.colorOf('LOCAL') : tensionRamp(g);
+  }
   function applyFillMode() {
-    map.setFillMode(S.mapMode === 'odds' && S.mc && S.mc.grids.length ? oddsFill : null);
+    map.setFillMode(S.mapMode === 'odds' && S.mc && S.mc.grids.length ? oddsFill : S.mapMode === 'tension' ? tensionFill : null);
   }
 
   // ------------------------------------------------------------ kingdom tab
@@ -387,6 +400,18 @@
     $('powersTable').innerHTML = `<tr><th>Power</th><th>Strength</th><th>People</th><th>GDP</th><th>Per head</th></tr>` + rows.map(([p, q]) => `<tr>
       <td><i class="swatch" style="background:${map.colorOf(p)}"></i>${esc(AH.displayOwner(p, names))}<span class="sub">${esc(govName[q.gov] || q.gov)} · ${esc(q.leader)}</span></td>
       <td>${pct(q.str / tot)}</td><td>${q.pop.toFixed(0)}M</td><td>${(q.pop * q.prod).toFixed(0)}</td><td>${q.prod.toFixed(1)}k</td></tr>`).join('');
+    const docName = { reform: 'Reform', repression: 'Repression', rearmament: 'Rearmament', expansion: 'Expansion', development: 'Development', detente: 'Détente', 'détente': 'Détente' };
+    [...$('powersTable').querySelectorAll('tr')].slice(1).forEach((tr, i) => {
+      const d = rows[i][1].doctrine;
+      if (d) tr.querySelector('.sub').insertAdjacentHTML('beforeend', ` · <b>${esc(docName[d] || d)}</b>`);
+    });
+    const C = snap.C || {};
+    const ranked = Object.entries(C).filter(([, c]) => c[3]).sort((a, b) => b[1][0] - a[1][0]).slice(0, 14);
+    const bar = (v, cls) => `<span class="pb ${cls}"><i style="width:${(100 * Math.min(1, v)).toFixed(0)}%"></i></span>`;
+    $('peoplesList').innerHTML = ranked.length ? `<div class="prow head"><span>People</span><span>Ruled by</span><span>Hardship</span><span>Segregation</span><span>Grievance</span></div>` + ranked.map(([id, c]) => {
+      const def = AH.COMMUNITY_BY_ID[id];
+      return `<div class="prow"><span>${esc(def ? def.name : id)}${c[4] > 0.3 ? ' <small>(autonomous)</small>' : ''}</span><span><i class="swatch" style="background:${map.colorOf(c[3])}"></i>${esc(AH.displayOwner(c[3], names))}</span>${bar(c[1], 'h')}${bar(c[2], 's')}${bar(c[0], 'g')}</div>`;
+    }).join('') : '<p class="note">No subject peoples yet.</p>';
     $('powersStack').innerHTML = rows.map(([p, q]) => `<i style="width:${((100 * q.str) / tot).toFixed(2)}%;background:${map.colorOf(p)}" title="${esc(AH.displayOwner(p, names))} ${pct(q.str / tot)}"></i>`).join('');
   }
 
@@ -429,6 +454,11 @@
     const region = AH.GROUP_LABEL[f.key] || f.properties.n;
     let h = `<div class="row"><i class="swatch" style="background:${map.colorOf(o)}"></i><b>${esc(who)}</b></div><div>${esc(region)}</div>`;
     if (AH.GROUP_LABEL[f.key]) h += `<div class="sub">Today: ${esc(f.properties.n)}</div>`;
+    const C = snapAt(S.t).C || {};
+    for (const cid of AH.KEY_COMMS[f.key] || []) {
+      const c = C[cid];
+      if (c && c[3]) h += `<div class="sub">${esc(AH.COMMUNITY_BY_ID[cid].name)}: grievance ${pct(c[0])} (hardship ${pct(c[1])}, segregation ${pct(c[2])})</div>`;
+    }
     if (S.mc && S.mc.grids.length) {
       const odds = AH.ownerOdds(S.mc, f.key, Math.floor(S.t)).slice(0, 3);
       h += `<div class="sub" style="margin-top:4px">Across ${S.mc.grids.length} runs: ${odds.map((x) => `${esc(AH.POWERS[x.id].name)} ${pct(x.p)}`).join(', ')}</div>`;
@@ -486,12 +516,12 @@
     });
     const setMapMode = (m) => {
       S.mapMode = m;
-      $('modeHistory').classList.toggle('on', m === 'history'); $('modeOdds').classList.toggle('on', m === 'odds');
-      $('modeHistory').setAttribute('aria-pressed', m === 'history'); $('modeOdds').setAttribute('aria-pressed', m === 'odds');
+      for (const [b, v] of [['modeHistory', 'history'], ['modeOdds', 'odds'], ['modeTension', 'tension']]) { $(b).classList.toggle('on', m === v); $(b).setAttribute('aria-pressed', m === v); }
       applyFillMode(); lastRenderKey = ''; render(false);
     };
     $('modeHistory').onclick = () => setMapMode('history');
     $('modeOdds').onclick = () => setMapMode('odds');
+    $('modeTension').onclick = () => setMapMode('tension');
     document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
       document.querySelectorAll('.tabs button').forEach((x) => { x.setAttribute('aria-selected', x === b); $(x.dataset.panel).hidden = x !== b; });
       store.set('tab', b.id);

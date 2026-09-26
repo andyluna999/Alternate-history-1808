@@ -20,6 +20,12 @@
     sa_mom: 0.45,     // South American independence momentum
     mx_land: 0.3,     // agrarian tension: land concentrated in haciendas
     decol: 0,         // worldwide decolonization pressure (20th century)
+    gb_chest: 0.5,    // Britain's war chest (rises with Mexican silver)
+    esp_resist: 0.55, // Spanish patriot resistance to Joseph Bonaparte
+    fr_power: 0.85,   // Napoleonic France's military power
+    coalition: 0.35,  // cohesion of the anti-French coalition
+    nat_wave: 0,      // contagion from recent national independence
+    rev_wave: 0,      // contagion from recent revolutions
   };
 
   AH.INITIAL_NAMES = { MEX: 'Governing Junta of New Spain' };

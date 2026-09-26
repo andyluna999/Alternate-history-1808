@@ -28,7 +28,7 @@
     CAS: ['KAZ', 'UZB', 'TKM', 'KGZ', 'TJK', 'AFG'],
     EAS: ['KOR', 'PRK', 'MNG', 'SAKHALIN'],
     ARB: ['YEM', 'OMN', 'ARE', 'QAT', 'BHR', 'KWT', 'SAU'],
-    PAC: ['FJI', 'SLB', 'VUT', 'NCL', 'PYF', 'WSM', 'TON', 'PNG'],
+    PAC: ['FJI', 'SLB', 'VUT', 'NCL', 'PYF', 'WSM', 'TON', 'PNG', 'NZL'],
   };
   AH.FRONTIER = Object.assign({}, AFRICA, ASIA);
   AH.REGION_OF = {};
@@ -51,7 +51,7 @@
     USA: 'the United States', MEX: 'Mexico', JPN: 'Japan', QNG: 'China' };
   AH.MINOR_STRENGTH = { POR: 3, NLD: 4, BEL: 4, EGY: 2 };
   // Chance a target beats off an invasion.
-  AH.RESIST = { ETH: 0.6, AFG: 0.65, THA: 0.55, SAU: 0.5, MAR: 0.3, LBR: 0.55, OMN: 0.3, KOR: 0.25, PRK: 0.25, TRANSVAAL: 0.35, ORANGE: 0.3, MNG: 0.4, YEM: 0.4, EGY: 0.3, TON: 0.4 };
+  AH.RESIST = { ETH: 0.6, AFG: 0.65, THA: 0.55, SAU: 0.5, MAR: 0.3, LBR: 0.55, OMN: 0.3, KOR: 0.25, PRK: 0.25, TRANSVAAL: 0.35, ORANGE: 0.3, MNG: 0.4, YEM: 0.4, EGY: 0.3, TON: 0.4, NZL: 0.3 };
 
   AH.COLONY_KEYS = new Set([].concat(...Object.values(AH.FRONTIER),
     ['CAPE', 'BENGAL', 'MADRAS', 'MARATHA', 'PUNJAB', 'PUNJAB_PK', 'ASSAM', 'SINDH', 'KALAT', 'KASHMIR', 'KASHMIR_PK', 'SIKKIM', 'GOA', 'PONDICHERRY', 'BGD', 'LKA', 'NPL',
@@ -91,7 +91,7 @@
     TRANSVAAL: 'Transvaal', CAPE: 'Cape', MMR: 'Burma', THA: 'Siam', LAO: 'Laos', KHM: 'Cambodia', VNM: 'Vietnam', ANNAM_S: 'Vietnam', COCHINCHINA: 'Vietnam', MYS: 'Malaya', SGP: 'Singapore',
     BRN: 'Brunei', KAZ: 'Kazakhstan', UZB: 'Uzbekistan', TKM: 'Turkmenistan', KGZ: 'Kyrgyzstan', TJK: 'Tajikistan', AFG: 'Afghanistan', KOR: 'Korea', PRK: 'Korea', MNG: 'Mongolia',
     SAKHALIN: 'Sakhalin', YEM: 'Yemen', OMN: 'Oman', ARE: 'Trucial Emirates', QAT: 'Qatar', BHR: 'Bahrain', KWT: 'Kuwait', SAU: 'Arabia', FJI: 'Fiji', SLB: 'Solomon Islands',
-    VUT: 'Vanuatu', NCL: 'New Caledonia', PYF: 'Tahiti', WSM: 'Samoa', TON: 'Tonga', PNG: 'Papua New Guinea', BENGAL: 'India', MADRAS: 'India', MARATHA: 'India', PUNJAB: 'India',
+    VUT: 'Vanuatu', NZL: 'Aotearoa', NCL: 'New Caledonia', PYF: 'Tahiti', WSM: 'Samoa', TON: 'Tonga', PNG: 'Papua New Guinea', BENGAL: 'India', MADRAS: 'India', MARATHA: 'India', PUNJAB: 'India',
     PUNJAB_PK: 'Pakistan', ASSAM: 'India', SINDH: 'Pakistan', KALAT: 'Pakistan', KASHMIR: 'India', KASHMIR_PK: 'Pakistan', SIKKIM: 'Sikkim', GOA: 'India', PONDICHERRY: 'India',
     BGD: 'Bengal', LKA: 'Ceylon', NPL: 'Nepal', IDN: 'Indonesia', TLS: 'East Timor', PHL: 'Philippines', HKG: 'Hong Kong', MAC: 'Macau', TWN: 'Taiwan', CYP: 'Cyprus', SYR: 'Syria',
     LBN: 'Lebanon', IRQ: 'Iraq', ISR: 'Palestine', PSX: 'Palestine', JOR: 'Transjordan', MUS: 'Mauritius', SYC: 'Seychelles', STP: 'São Tomé', CPV: 'Cape Verde', JAM: 'Jamaica',
@@ -110,7 +110,7 @@
     ORANGE: 'bloemfontein', TRANSVAAL: 'pretoria', CAPE: 'capetown', MMR: 'mandalay', THA: 'vientiane', LAO: 'vientiane', KHM: 'phnompenh', VNM: 'hanoi', ANNAM_S: 'hue',
     COCHINCHINA: 'saigon', MYS: 'kuala', SGP: 'singapore', BRN: 'kinabalu', KAZ: 'alma', UZB: 'samarkand', TKM: 'merv', KGZ: 'tashkent', TJK: 'samarkand', AFG: 'kabul',
     KOR: 'seoul', PRK: 'seoul', MNG: 'beijing', SAKHALIN: 'vladivostok', YEM: 'aden', OMN: 'aden', ARE: 'aden', QAT: 'aden', BHR: 'aden', KWT: 'aden', SAU: 'diriyah', FJI: 'suva',
-    SLB: 'suva', VUT: 'noumea', NCL: 'noumea', PYF: 'papeete', WSM: 'apia', TON: 'apia', PNG: 'portmoresby', BENGAL: 'calcutta', PUNJAB_PK: 'lahore', IDN: 'batavia', PHL: 'manila',
+    SLB: 'suva', NZL: 'waitangi', VUT: 'noumea', NCL: 'noumea', PYF: 'papeete', WSM: 'apia', TON: 'apia', PNG: 'portmoresby', BENGAL: 'calcutta', PUNJAB_PK: 'lahore', IDN: 'batavia', PHL: 'manila',
     HKG: 'hongkong', TWN: 'taipei', CYP: 'nicosia', SYR: 'aden', IRQ: 'aden', ISR: 'aden', JAM: 'kingston', GUY: 'georgetown', SUR: 'georgetown', CUB: 'havana', PRI: 'sanjuan',
     LKA: 'calcutta', MANCHURIA: 'aigun', AMUR: 'aigun', MUS: 'port_louis', BHS: 'kingston', TTO: 'caracas',
   };

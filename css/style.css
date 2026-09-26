@@ -242,3 +242,14 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* peoples / tensions */
+.peoples { display: grid; gap: 3px; font-size: 12px; margin-bottom: 10px; }
+.prow { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.3fr) repeat(3, minmax(34px, .7fr)); gap: 6px; align-items: center; }
+.prow > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow.head { color: var(--ink-3); font-size: 11px; }
+.prow .swatch { margin-right: 4px; vertical-align: -1px; }
+.prow small { color: var(--ink-3); }
+.pb { height: 7px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 10%, transparent); position: relative; }
+.pb i { position: absolute; inset: 0 auto 0 0; border-radius: 2px; }
+.pb.h i { background: #c98a2b; } .pb.s i { background: #7a5ea8; } .pb.g i { background: #b3261e; }
