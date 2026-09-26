@@ -36,12 +36,25 @@ Events in `js/events-americas.js`, `js/events-world.js` and `js/events-modern.js
 | `game` | an optional 2×2 game. Outcome weights come from its logit quantal-response equilibrium |
 | `otl` | what happened in our timeline. If the window closes without the event, the chronicle logs it as averted |
 
-The 20th-century layer keeps the same mechanics. Examples:
-- Mexican agrarian tension drives either a revolution or a negotiated land reform.
-- A second U.S.–Mexican crisis is most likely while Mexico is in civil war.
-- Texas oil (Spindletop, 1901) makes Mexico an oil power, with an expropriation game in the 1920s–60s.
-- A sovereignty referendum in the English-speaking north, modeled on Quebec's.
-- The world wars, decolonization and the end of the Soviet Union mostly follow our timeline. They transfer territory only from whoever holds it in this run.
+### How the divergence spreads
+
+Events whose actors were alive in 1808 play out much as they did: Napoleon's wars, the Congress of Vienna, Greek independence, British India to about 1850. After that the wider world is **simulated, not scripted** (`js/world.js`, `js/events-process.js`):
+
+- **Twelve great powers** (Britain, France, Prussia/Germany, Austria, Russia, the Ottoman Empire, Spain, Sardinia/Italy, the U.S., Mexico, Japan, China). Each has population, output per head, stability, militarization, government and a ruler. Military strength ≈ population^0.6 × output per head^2.5, so industry outweighs numbers, and oil adds a bonus after 1905.
+- **Recurring processes** read those numbers and write back to them:
+  - industrial take-off
+  - Italian and German unification (Prussian-led, Austrian-led, parliamentary, or failed)
+  - Balkan independence as the Ottomans weaken
+  - wars between two powers
+  - general wars, whose blocs form from rivalries
+  - revolutions: republican, socialist, military or reformist
+  - colonial expansion by regional affinity, with local resistance
+  - decolonization, the fall of the Chinese empire, the opening of Japan
+  - inventions and the spread of nuclear weapons, which makes general war rare
+- **Rivalries** relax toward a structural baseline instead of zero. Lost provinces, shared borders, naval races, ideology and democratic peace all feed the baseline.
+- **New people** (`js/names.js`): nobody conceived after the divergence is the same person. From mid-century on, rulers, rebels, generals and inventors are generated from each culture's naming traditions. The **People** tab lists them, and the **Powers** tab ranks the powers each year by strength, GDP and GDP per head.
+
+The Americas events keep their state-driven odds and games. They read the world model too, for example whether a general war is on or which powers have gone socialist.
 
 Randomness is hashed from `(seed, event, year)`. Changing one outcome alters later history only through the state it leaves behind, the "butterfly" path. Far from Mexico, events mostly follow our timeline as background.
 
@@ -56,7 +69,9 @@ js/regions.js                  historical territories and the 1808 world
 js/places.js                   cities and provinces events point to
 js/model.js                    state variables and yearly drift
 js/engine.js                   simulation, game solver, Monte Carlo
-js/events-*.js                 the event scripts (Americas, world, 1900–2000)
+js/names.js                    generated people
+js/world.js, world-tables.js   great-power model, wars, peace terms, successor states
+js/events-*.js                 event scripts: Americas, pre-1850 world, world processes, 1900–2000 Americas
 js/map.js, js/app.js           D3 renderer and UI
 data/world.topo.json           Natural Earth admin-1 (+ rivers, lakes), simplified
 tools/build-map.mjs            rebuilds the map data (npm run build:map)

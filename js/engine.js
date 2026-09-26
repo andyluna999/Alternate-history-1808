@@ -53,14 +53,25 @@
       f: {}, cum: {}, names: Object.assign({}, AH.INITIAL_NAMES), sched: {}, fired: {}, cur: null,
     };
     s.owner = (k) => s.owners[k] || AH.defaultOwner(k);
-    s.oid = (k) => AH.ownerId(s.owner(k));
+    const oidMap = {};
+    s.oid = (k) => { let v = oidMap[k]; if (v === undefined) v = oidMap[k] = AH.ownerId(s.owner(k)); return v; };
+    s.dirty = true;
+    const hc = (s.heldCount = {});
+    for (const k in s.owners) { const o = s.oid(k); hc[o] = (hc[o] || 0) + 1; }
     s.own = (keys, owner) => {
       for (const k of [].concat(keys)) {
         if (s.owner(k) === owner) continue;
+        const had = k in s.owners ? s.oid(k) : null;
+        if (had) hc[had]--;
         s.owners[k] = owner;
+        oidMap[k] = AH.ownerId(owner);
+        hc[oidMap[k]] = (hc[oidMap[k]] || 0) + 1;
+        s.dirty = true;
         if (s.cur) s.cur.changes.push([k, owner]);
       }
     };
+    // How many territories each power holds (refreshed yearly).
+    s.held = (p) => (s.heldCount && s.heldCount[p]) || 0;
     // Transfer only the keys currently held by power `from`.
     s.take = (keys, from, owner) => s.own([].concat(keys).filter((k) => s.oid(k) === from), owner);
     s.set = (flag, val = true) => { s.f[flag] = val; };
@@ -68,10 +79,34 @@
     s.mul = (k, m) => { s.v[k] *= m; };
     s.roll = (tag, p) => (s.likely ? p >= 0.5 : hash(s.seed, tag, s.y) < p);
     s.after = (dy, id) => { s.sched[id] = s.y + dy; };
-    s.name = (power, n) => { s.names[power] = n; if (s.cur) s.cur.rename = [power, n]; };
+    s.name = (power, n) => { s.names[power] = n; if (s.cur) (s.cur.renames = s.cur.renames || []).push([power, n]); };
+    s.fig = (tag, culture, role, power) => AH.figure(s, tag, culture, role, power);
+    // Weighted choice; in "most likely" mode, the heaviest option.
+    s.pick = (tag, weights) => {
+      const tot = weights.reduce((a, w) => a + Math.max(0, w), 0);
+      if (!tot) return -1;
+      if (s.likely) return weights.indexOf(Math.max(...weights));
+      let r = hash(s.seed, tag, s.y) * tot;
+      for (let i = 0; i < weights.length; i++) { r -= Math.max(0, weights[i]); if (r < 0) return i; }
+      return weights.length - 1;
+    };
+    s.count = {};
+    if (AH.initWorld) AH.initWorld(s);
     return s;
   }
   AH.createState = createState;
+
+  // Per-year record: territory, variables, names, and a compact view of the great powers.
+  function snapshot(s, y) {
+    const P = {};
+    for (const p in s.P || {}) {
+      const q = s.P[p];
+      if (q.dead) continue;
+      P[p] = { pop: q.pop, prod: q.prod, stab: q.stab, gov: q.gov, str: AH.strength(s, p), leader: q.leader ? q.leader.title + ' ' + q.leader.name : '' };
+    }
+    // Owners are not copied here; AH.materialize rebuilds them from the log's changes.
+    return { y, owners: null, v: Object.assign({}, s.v), names: Object.assign({}, s.names), P };
+  }
 
   const text = (t, s) => (typeof t === 'function' ? t(s) : t || '');
 
@@ -88,11 +123,13 @@
     for (let y = START; y <= END; y++) {
       s.y = y;
       if (y > START) AH.drift(s);
-      years.push({ y, owners: Object.assign({}, s.owners), v: Object.assign({}, s.v), names: Object.assign({}, s.names) });
+      if (AH.worldDrift) AH.worldDrift(s);
+      years.push(snapshot(s, y));
 
       const due = [];
       for (const ev of evs) {
-        if (s.fired[ev.id]) continue;
+        if (s.fired[ev.id] && !ev.repeat) continue;
+        if (ev.repeat && ev.max && (s.count[ev.id] || 0) >= ev.max) continue;
         const scheduled = s.sched[ev.id] === y;
         const [a, b] = ev.win || [ev.y, ev.y];
         if (!scheduled && (ev.sched || y < a || y > b)) continue;
@@ -159,19 +196,36 @@
           if (o.place) entry.place = text(o.place, s);
           if (o.kind) entry.kind = o.kind;
         }
-        entry.major = !!ev.major;
-        entry.bg = !!ev.bg;
-        s.fired[ev.id] = { y, o: idx };
+        if (entry.major === undefined) entry.major = !!ev.major;
+        if (entry.bg === undefined) entry.bg = !!ev.bg;
         s.cur = null;
+        if (entry.cancel) continue;
+        s.fired[ev.id] = { y, o: idx };
+        if (ev.repeat) { s.count[ev.id] = (s.count[ev.id] || 0) + 1; delete s.cum[ev.id]; entry.process = true; }
         log.push(entry);
       }
     }
-    years.push({ y: END + 1, owners: Object.assign({}, s.owners), v: Object.assign({}, s.v), names: Object.assign({}, s.names) });
-    return { seed, years, log, fired: s.fired, flags: s.f };
+    s.y = END + 1;
+    years.push(snapshot(s, END + 1));
+    return { seed, years, log, fired: s.fired, flags: s.f, people: s.people || [], rulers: s.rulers || {} };
+  };
+
+  // Fill in each year's owner map from the initial map plus the log's changes.
+  // Changes from events in year y appear in the snapshot for year y + 1.
+  AH.materialize = function (run) {
+    if (run.years[0].owners) return run;
+    const cur = Object.assign({}, AH.INITIAL_OWNERS);
+    let li = 0;
+    for (const yr of run.years) {
+      while (li < run.log.length && run.log[li].y < yr.y) { for (const [k, o] of run.log[li].changes) cur[k] = o; li++; }
+      yr.owners = Object.assign({}, cur);
+    }
+    return run;
   };
 
   // Owners of every key at a fractional time t (e.g. 1846.5 = mid-1846).
   AH.ownersAt = function (run, t) {
+    AH.materialize(run);
     const y = Math.floor(t), m = Math.floor((t - y) * 12) + 1;
     const snap = run.years[Math.max(0, Math.min(run.years.length - 1, y - START))];
     const owners = Object.assign({}, snap.owners);
@@ -179,7 +233,7 @@
     for (const e of run.log) {
       if (e.y !== y || e.m > m) continue;
       for (const [k, o] of e.changes) owners[k] = o;
-      if (e.rename) names[e.rename[0]] = e.rename[1];
+      for (const [p, n] of e.renames || []) names[p] = n;
     }
     return { owners, names };
   };
@@ -196,15 +250,27 @@
     const nYears = END + 2 - START;
     for (let c = 0; c < count && mc.done < mc.n; c++, mc.done++) {
       const r = AH.simulate({ seed: mc.seed0 + mc.done * 7919, forces: mc.forces });
-      for (const y of r.years) for (const k in y.owners) if (!mc.keyIndex.has(k)) { mc.keyIndex.set(k, mc.keys.length); mc.keys.push(k); }
       const K = KEY_STRIDE;
+      const kidx = (k) => { let i = mc.keyIndex.get(k); if (i === undefined) { i = mc.keys.length; mc.keyIndex.set(k, i); mc.keys.push(k); } return i; };
       const grid = new Uint8Array(nYears * K).fill(255);
-      r.years.forEach((y, yi) => { for (const k in y.owners) grid[yi * K + mc.keyIndex.get(k)] = mc.pIndex[AH.ownerId(y.owners[k])]; });
+      const row = new Uint8Array(K).fill(255);
+      for (const k in AH.INITIAL_OWNERS) row[kidx(k)] = mc.pIndex[AH.ownerId(AH.INITIAL_OWNERS[k])];
+      let li = 0;
+      r.years.forEach((yr, yi) => {
+        while (li < r.log.length && r.log[li].y < yr.y) { for (const [k, o] of r.log[li].changes) row[kidx(k)] = mc.pIndex[AH.ownerId(o)]; li++; }
+        grid.set(row, yi * K);
+      });
       mc.grids.push(grid);
+      const seen = new Set();
+      mc.multi = mc.multi || {};
+      const gwe = r.log.filter((e) => e.id === 'great_war_end').length;
+      if (gwe >= 2) mc.multi.great_war_end = (mc.multi.great_war_end || 0) + 1;
+      if (r.log.some((e) => e.id === 'revolution' && /socialist revolution/.test(e.title))) mc.socialist = (mc.socialist || 0) + 1;
       for (const e of r.log) {
-        const rec = mc.eventFreq[e.id] || (mc.eventFreq[e.id] = { fired: 0, averted: 0, outcomes: {}, years: [] });
+        const rec = mc.eventFreq[e.id] || (mc.eventFreq[e.id] = { fired: 0, runs: 0, averted: 0, outcomes: {}, years: [] });
         if (e.kind === 'averted') { rec.averted++; continue; }
         rec.fired++; rec.years.push(e.y);
+        if (!seen.has(e.id)) { seen.add(e.id); rec.runs++; }
         if (e.outcomeTitle) rec.outcomes[e.outcomeTitle] = (rec.outcomes[e.outcomeTitle] || 0) + 1;
       }
     }

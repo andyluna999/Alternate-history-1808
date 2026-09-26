@@ -74,6 +74,13 @@
 
   // Owner strings may carry a custom polity name: "LOCAL:Sultanate of Morocco".
   AH.ownerId = (o) => (o ? o.split(':')[0] : 'LOCAL');
+  // Name as shown on the map: a custom polity name, else this history's name for the power.
+  AH.displayOwner = (o, names) => {
+    if (!o) return 'Unclaimed';
+    const i = o.indexOf(':');
+    if (i > -1) return o.slice(i + 1);
+    return (names && names[o]) || (AH.POWERS[o] ? AH.POWERS[o].name : o);
+  };
   AH.ownerName = (o, fallback) => {
     if (!o) return 'Unclaimed';
     const i = o.indexOf(':');

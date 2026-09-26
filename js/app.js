@@ -38,7 +38,7 @@
 
   function startMonteCarlo() {
     clearTimeout(S.mcTimer);
-    S.mc = AH.mcStart({ n: 200, forces: S.forces });
+    S.mc = AH.mcStart({ n: 120, forces: S.forces });
     S.oddsCache = {};
     const step = () => {
       const done = AH.mcStep(S.mc, 3);
@@ -65,6 +65,8 @@
       renderChron(t);
       renderLegend(owners);
       if (!$('panelMex').hidden) renderKingdom(t, owners, names);
+      if (!$('panelPowers').hidden) renderPowers(t);
+      if (!$('panelPeople').hidden) renderPeople(t);
       if (!$('panelOdds').hidden) renderOdds();
     }
     $('scrubber').value = t.toFixed(3);
@@ -75,7 +77,9 @@
     $('plateYear').textContent = y;
     $('plateMonth').textContent = MONTHS[m];
     const mexHeld = AH.ownerId(owners.MEX || '') === 'MEX';
-    $('platePolity').textContent = mexHeld ? names.MEX : 'Viceroyalty of New Spain';
+    const snap = S.run.years[Math.min(S.run.years.length - 1, y - AH.START)];
+    const ruler = mexHeld && snap.P && snap.P.MEX ? snap.P.MEX.leader : '';
+    $('platePolity').textContent = mexHeld ? names.MEX + (ruler ? ' · ' + ruler : '') : 'Viceroyalty of New Spain';
     $('plateSwatch').style.background = map.colorOf(mexHeld ? 'MEX' : 'ESP');
   }
 
@@ -130,7 +134,7 @@
     const ids = Object.keys(area).filter((id) => id !== 'LOCAL').sort((a, b) => (b === 'MEX') - (a === 'MEX') || area[b] - area[a]).slice(0, 11);
     $('legend').innerHTML = ids.map((id) => {
       const fill = AH.POWERS[id].hatch ? `repeating-linear-gradient(45deg, ${map.colorOf(id)} 0 3px, rgba(0,0,0,.25) 3px 4px)` : map.colorOf(id);
-      const n = id === 'MEX' ? AH.ownersAt(S.run, S.t).names.MEX : AH.POWERS[id].name;
+      const n = AH.displayOwner(id, AH.ownersAt(S.run, S.t).names);
       return `<span><i class="swatch" style="background:${fill}"></i>${esc(n)}</span>`;
     }).join('');
   }
@@ -164,6 +168,10 @@
         <tr><th></th>${g.cols.map((c, j) => `<th>${esc(c)}<br><small>${pct(g.q[j])}</small></th>`).join('')}</tr>
         ${g.rows.map((r, i) => `<tr><th>${esc(r)} <small>${pct(g.p[i])}</small></th>${g.cols.map((_, j) => `<td class="${ne.has(i + ',' + j) ? 'ne' : ''}">${g.P[i][j][0].toFixed(1)}, ${g.P[i][j][1].toFixed(1)}<small>${pct(g.p[i] * g.q[j])}</small></td>`).join('')}</tr>`).join('')}
       </table>`;
+    }
+    if (e.process) {
+      h += `<div class="hint">This is a recurring world process. Its timing and result follow from the state of the great powers that year, so it can't be rewritten on its own. Rewrite an earlier decision, or change the seed, to see it go differently.</div>`;
+      return h + '</div>';
     }
     if (e.kind === 'averted') {
       const outs = ev.outcomes ? ev.outcomes.map((o, i) => [i, typeof o.title === 'function' ? 'Alternative ' + (i + 1) : o.title]) : [[0, 'Make it happen']];
@@ -231,31 +239,29 @@
   const LANDMARKS = [
     ['hidalgo', 'A mass revolt in the Bajío', null, 'Grito de Dolores, 1810'],
     ['crown', 'A Bourbon prince takes the Mexican crown', 'Infante Francisco de Paula accepts'],
-    ['cam_secession', 'Central America secedes', null, '1823'],
+    ['cam_secession', 'Central America secedes before 1850', null, '1823'],
     ['texas_revolt', 'Texas wins independence', 'The Republic of Texas', '1836'],
-    ['texas_annex', 'The U.S. annexes Texas', null, '1845'],
     ['crisis_1846', 'War between the U.S. and Mexico', 'War: U.S. troops cross the Rio Grande', '1846'],
-    ['mxus_peace', 'Mexico loses its north', 'U.S. victory: the Mexican Cession', '1848'],
-    ['yucatan', 'Yucatán secedes', null, '1841'],
+    ['mxus_peace', 'Mexico loses its north in the 1840s', 'U.S. victory: the Mexican Cession', '1848'],
     ['ca_crisis', 'California breaks away from Mexico', 'The California Republic stands'],
-    ['reforma', 'War of the Reform', 'War of the Reform', '1857'],
-    ['intervention', 'Maximilian on a Mexican throne', 'Maximilian installed', '1864'],
+    ['intervention', 'A Habsburg on a Mexican throne', 'A Habsburg emperor installed', '1864'],
     ['civil_war', 'American Civil War', null, '1861'],
     ['civil_war_end', 'The Confederacy survives', 'A negotiated Confederate independence'],
-    ['gc_split', 'Gran Colombia breaks apart', null, '1830'],
-    ['mx_republic', 'The Mexican monarchy is overthrown'],
-    ['canal', 'A Mexican interoceanic route'],
     ['war_1898', 'The U.S. fights Spain over Cuba', 'The Spanish–American War', '1898'],
     ['war_1898', 'Mexico fights Spain over Cuba', 'The Spanish–Mexican War'],
     ['mx_revolution', 'A Mexican revolutionary civil war', 'A decade of civil war', '1910'],
-    ['crisis_1914', 'U.S. occupies or conquers the Mexican north', 'War over the north'],
     ['oil_nat', 'Mexico nationalizes its oil', null, '1938'],
-    ['ww1_end', 'Allied victory in the Great War', 'Allied victory: Versailles, Saint-Germain, Trianon', '1918'],
     ['north_referendum', 'Independence referendum in the north'],
-    ['cuba_rev', 'A Cuban revolution', null, '1959'],
-    ['cam_late', 'Central America leaves Mexico after 1945'],
-    ['ussr_end', 'The Soviet Union dissolves by 2000', null, '1991'],
+    ['italy', 'Italy unified', null, '1861'],
+    ['germany', 'Germany unified', null, '1871'],
+    ['great_war', 'At least one general war', null, '1914'],
+    ['great_war_end', 'Two or more general wars end', '__2'],
+    ['revolution', 'A socialist revolution in a great power', '__socialist', '1917'],
+    ['china_revolution', 'The Chinese empire falls', null, '1911'],
+    ['india', 'India wins independence', null, '1947'],
+    ['bomb', 'Two or more nuclear powers', null, '1949'],
   ];
+
 
   function renderOdds() {
     const mc = S.mc;
@@ -273,8 +279,8 @@
     }).join('');
     const n = mc.done || 1;
     $('eventOdds').innerHTML = LANDMARKS.map(([id, label, outcome, otl]) => {
-      const r = mc.eventFreq[id] || { fired: 0, outcomes: {} };
-      const share = (outcome ? r.outcomes[outcome] || 0 : r.fired) / n;
+      const r = mc.eventFreq[id] || { fired: 0, runs: 0, outcomes: {} };
+      const share = (outcome === '__2' ? mc.multi[id] || 0 : outcome === '__socialist' ? mc.socialist || 0 : outcome ? r.outcomes[outcome] || 0 : r.runs) / n;
       return `<div class="orow"><div class="lab"><span>${esc(label)}${otl ? ` <span class="note">(OTL ${otl})</span>` : ''}</span><span>${pct(share)}</span></div>
         <div class="meter ${share < 0.5 ? 'muted' : ''}"><i style="width:${(100 * share).toFixed(1)}%"></i></div></div>`;
     }).join('');
@@ -369,6 +375,39 @@
     svg.querySelector('.hit').addEventListener('pointerleave', () => { xh.style.display = 'none'; });
   }
 
+  // ------------------------------------------------------------ powers & people
+  function renderPowers(t) {
+    const y = Math.min(AH.END, Math.floor(t));
+    const snap = S.run.years[y - AH.START];
+    const { names } = AH.ownersAt(S.run, t);
+    const rows = Object.entries(snap.P || {}).sort((a, b) => b[1].str - a[1].str);
+    const tot = rows.reduce((a, [, q]) => a + q.str, 0) || 1;
+    $('powersYear').textContent = y;
+    const govName = { monarchy: 'Monarchy', empire: 'Empire', republic: 'Republic', communist: 'Socialist state', dictatorship: 'Military regime', junta: 'Junta', regency: 'Regency' };
+    $('powersTable').innerHTML = `<tr><th>Power</th><th>Strength</th><th>People</th><th>GDP</th><th>Per head</th></tr>` + rows.map(([p, q]) => `<tr>
+      <td><i class="swatch" style="background:${map.colorOf(p)}"></i>${esc(AH.displayOwner(p, names))}<span class="sub">${esc(govName[q.gov] || q.gov)} · ${esc(q.leader)}</span></td>
+      <td>${pct(q.str / tot)}</td><td>${q.pop.toFixed(0)}M</td><td>${(q.pop * q.prod).toFixed(0)}</td><td>${q.prod.toFixed(1)}k</td></tr>`).join('');
+    $('powersStack').innerHTML = rows.map(([p, q]) => `<i style="width:${((100 * q.str) / tot).toFixed(2)}%;background:${map.colorOf(p)}" title="${esc(AH.displayOwner(p, names))} ${pct(q.str / tot)}"></i>`).join('');
+  }
+
+  function renderPeople(t) {
+    const y = Math.floor(t);
+    $('peopleYear').textContent = y;
+    const { names } = AH.ownersAt(S.run, t);
+    const cur = [];
+    const alive = S.run.years[Math.min(AH.END, y) - AH.START].P || {};
+    for (const [p, list] of Object.entries(S.run.rulers || {})) {
+      if (!alive[p]) continue;
+      const r = list.filter((x) => x.from <= y && (x.to === null || x.to > y)).pop();
+      if (r) cur.push([p, r]);
+    }
+    const order = ['MEX', 'USA', 'GBR', 'FRA', 'GER', 'PRU', 'AUT', 'ITA', 'SAR', 'RUS', 'OTT', 'ESP', 'JPN', 'QNG'];
+    cur.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
+    $('rulersNow').innerHTML = cur.map(([p, r]) => `<div><i class="swatch" style="background:${map.colorOf(p)}"></i><span>${esc(r.title)} ${esc(r.name)}</span><span class="who">${esc(AH.displayOwner(p, names))}, since ${r.from}</span></div>`).join('');
+    const ppl = (S.run.people || []).filter((x) => x.first <= y).slice().reverse();
+    $('peopleList').innerHTML = ppl.map((x) => `<li><div class="n">${esc(x.name)}</div><div class="r">${esc(x.role)}</div><div class="y">Born c. ${x.born}; appears ${x.first}${x.power && AH.POWERS[x.power] ? ' · ' + esc(AH.displayOwner(x.power, names)) : ''}</div></li>`).join('') || '<li>No new figures yet: everyone on stage was alive in 1808.</li>';
+  }
+
   // ------------------------------------------------------------ ticks
   function drawTicks() {
     const svg = $('ticks');
@@ -386,7 +425,7 @@
     const { owners, names } = AH.ownersAt(S.run, S.t);
     const o = owners[f.key] || AH.defaultOwner(f.key);
     const id = AH.ownerId(o);
-    const who = id === 'MEX' ? names.MEX : AH.ownerName(o);
+    const who = AH.displayOwner(o, names);
     const region = AH.GROUP_LABEL[f.key] || f.properties.n;
     let h = `<div class="row"><i class="swatch" style="background:${map.colorOf(o)}"></i><b>${esc(who)}</b></div><div>${esc(region)}</div>`;
     if (AH.GROUP_LABEL[f.key]) h += `<div class="sub">Today: ${esc(f.properties.n)}</div>`;

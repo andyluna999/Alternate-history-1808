@@ -147,7 +147,7 @@
     // ---- atlas labels: one per contiguous-ish block of each owner
     const shortName = (owner) => {
       const id = AH.ownerId(owner);
-      let n = id === 'MEX' ? names.MEX || AH.ownerName(owner) : AH.ownerName(owner);
+      let n = AH.displayOwner(owner, names);
       if (id === 'LOCAL' || id === 'NATIVE' || id === 'JOINT' || id === 'FRC') n = n.replace(/\s*\(.*\)$/, '');
       return n;
     };

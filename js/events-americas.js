@@ -381,7 +381,7 @@
   ev({ id: 'caf_dissolves', win: [1838, 1842], m: 5, place: 'guatemala', kind: 'politics',
     when: (s) => s.oid('GTM') === 'CAF', p: 0.5,
     title: 'The Central American federation dissolves',
-    text: 'Carrera\'s peasant army takes Guatemala City; the federation splits into five small republics.',
+    text: (s) => `${s.fig('cam:caudillo', 'es', 'Peasant caudillo of Guatemala', 'CAF')}'s peasant army takes Guatemala City; the federation splits into five small republics.`,
     fx: (s) => { s.own('GTM', 'CAF:Guatemala'); s.own('SLV', 'CAF:El Salvador'); s.own('HND', 'CAF:Honduras'); s.own('NIC', 'CAF:Nicaragua'); s.own('CRI', 'CAF:Costa Rica'); } });
 
   ev({ id: 'cuba_1826', win: [1824, 1829], m: 4, place: 'havana', kind: 'war', major: true,
@@ -611,14 +611,14 @@
 
   ev({ id: 'walker', win: [1855, 1857], m: 6, place: 'granada', kind: 'war',
     p: (s) => (s.oid('NIC') === 'CAF' ? 0.7 : 0.15),
-    title: 'William Walker in Nicaragua',
-    text: 'The Tennessee filibuster lands with his "Immortals" and makes himself president of Nicaragua, reintroducing slavery.',
+    title: (s) => `${s.fig('filibuster', 'en', 'American filibuster in Central America', 'USA')} in Nicaragua`,
+    text: (s) => `The Tennessee filibuster ${s.fig('filibuster', 'en')} lands with his "Immortals" and makes himself president of Nicaragua, reintroducing slavery.`,
     otl: 'In our timeline Walker ruled Nicaragua in 1856–57 before a Central American coalition expelled him.',
     outcomes: [
-      { title: 'Walker rules Granada for a year', w: (s) => (s.oid('NIC') === 'CAF' ? 0.7 : 0.1), fx: (s) => { s.own('NIC', 'LOCAL:Walker\'s filibuster regime'); s.after(1, 'walker_out'); } },
-      { title: 'Intercepted at San Juan del Norte', w: (s) => (mex(s, 'NIC') ? 0.9 : 0.3), place: 'sanjuannorte', text: 'Walker\'s ships are taken at sea and his men interned.' },
+      { title: 'The filibuster rules Granada for a year', w: (s) => (s.oid('NIC') === 'CAF' ? 0.7 : 0.1), fx: (s) => { s.own('NIC', 'LOCAL:Filibuster regime in Nicaragua'); s.after(1, 'walker_out'); } },
+      { title: 'Intercepted at San Juan del Norte', w: (s) => (mex(s, 'NIC') ? 0.9 : 0.3), place: 'sanjuannorte', text: 'The filibusters\' ships are taken at sea and the men interned.' },
     ] });
-  ev({ id: 'walker_out', sched: true, m: 5, place: 'granada', kind: 'war', title: 'Walker driven out of Nicaragua',
+  ev({ id: 'walker_out', sched: true, m: 5, place: 'granada', kind: 'war', title: 'The filibusters are driven out of Nicaragua',
     fx: (s) => s.own('NIC', AH.CENTAM.some((k) => mex(s, k)) ? 'MEX' : 'CAF:Nicaragua') });
 
   // ------------------------------------------------------------------ The US sectional crisis
@@ -644,7 +644,7 @@
   ev({ id: 'civil_war_end', sched: true, m: 4, place: 'appomattox', kind: 'war', major: true,
     title: 'The American war ends',
     outcomes: [
-      { title: 'Union victory at Appomattox', w: (s) => 0.8 + (s.f.mx_union ? 0.1 : 0) - (s.f.mx_csa ? 0.15 : 0), text: 'Lee surrenders. The Thirteenth Amendment abolishes slavery.',
+      { title: 'Union victory at Appomattox', w: (s) => 0.8 + (s.f.mx_union ? 0.1 : 0) - (s.f.mx_csa ? 0.15 : 0), text: (s) => `${s.fig('csa:general', 'en', 'Commander of the Confederate armies', 'CSA')} surrenders the last Confederate army. A constitutional amendment abolishes slavery.`,
         fx: (s) => { s.take(AH.CSA_STATES.concat(['US-TX']), 'CSA', 'USA'); s.set('sect_resolved'); s.mul('us_pop', 0.98); } },
       { title: 'A negotiated Confederate independence', w: (s) => 0.2 + (s.f.mx_csa ? 0.15 : 0), place: 'richmond', text: 'War-weariness brings Peace Democrats to power. An armistice leaves the Confederacy independent.',
         fx: (s) => { s.set('csa_independent'); s.set('sect_resolved'); s.mul('us_pop', 0.7); } },
@@ -669,9 +669,9 @@
     title: (s) => (s.oid('US-CA') === 'USA' ? 'Golden spike at Promontory Summit' : 'The Northern Pacific reaches Portland'),
     text: (s) => (s.oid('US-CA') === 'USA' ? 'The first transcontinental railroad joins at Promontory Summit, Utah.' : 'With California Mexican, America\'s first transcontinental line runs to the Columbia River instead.'),
     fx: (s) => s.set('west_settled') });
-  ev({ id: 'bighorn', y: 1876, m: 6, place: 'bighorn', kind: 'war', p: 0.8,
+  ev({ id: 'bighorn', win: [1862, 1890], m: 6, place: 'bighorn', kind: 'war', p: 0.1,
     when: (s) => s.oid('US-MT') === 'USA',
-    title: 'Little Bighorn', text: 'Lakota and Cheyenne warriors wipe out Custer\'s command. The Black Hills are seized anyway the next year.' });
+    title: 'The Battle of the Little Bighorn', text: (s) => `Lakota and Cheyenne warriors under ${s.fig('lakota', 'en', 'Lakota war leader', '')} wipe out a U.S. cavalry column. The Black Hills are seized anyway the next year.` });
   ev({ id: 'oklahoma', y: 1889, m: 4, place: 'guthrie', kind: 'politics', bg: true,
     when: (s) => s.oid('US-OK') === 'NATIVE',
     title: 'The Oklahoma land run', fx: (s) => s.own('US-OK', 'USA') });
@@ -735,10 +735,10 @@
     otl: 'In our timeline France occupied Mexico from 1862 and installed Maximilian of Habsburg as emperor (1864–67).',
     averted: 'No French intervention, and no Maximilian',
     outcomes: [
-      { title: 'Maximilian installed', w: (s) => 0.9 - s.v.mx_mil, text: 'French troops take Puebla on the second try. Maximilian of Habsburg is crowned in Mexico City.', fx: (s) => { s.set('intervened'); s.name('MEX', 'Second Mexican Empire (Maximilian)'); s.after(5, 'intervention_end'); s.add('mx_stab', -0.15); } },
+      { title: 'A Habsburg emperor installed', w: (s) => 0.9 - s.v.mx_mil, text: (s) => `French troops take Puebla on the second try. Archduke ${s.fig('mx:habsburg', 'de', 'Habsburg archduke placed on the Mexican throne by France', 'MEX').split(' ')[0]} of Habsburg is crowned in Mexico City.`, fx: (s) => { s.set('intervened'); s.name('MEX', 'Second Mexican Empire (Habsburg)'); s.after(5, 'intervention_end'); s.add('mx_stab', -0.15); } },
       { title: 'Cinco de Mayo: the French are beaten', w: (s) => 0.3 + s.v.mx_mil, place: 'puebla', text: 'The French are defeated at Puebla and go home.', fx: (s) => { s.set('intervened'); s.add('mx_stab', 0.05); } },
     ] });
-  ev({ id: 'intervention_end', sched: true, m: 6, place: 'queretaro', kind: 'war', title: 'Maximilian shot at Querétaro',
+  ev({ id: 'intervention_end', sched: true, m: 6, place: 'queretaro', kind: 'war', title: 'The Habsburg emperor is shot at Querétaro',
     text: 'With the French gone and U.S. arms flowing south, the empire collapses. A republic is restored.',
     fx: (s) => { s.set('republic'); s.name('MEX', 'Mexican Republic'); } });
 
@@ -766,8 +766,8 @@
       { title: 'The Tehuantepec railway', w: 0.5, place: 'tehuantepec', text: 'A double-track railway across the Isthmus of Tehuantepec carries freight between Coatzacoalcos and Salina Cruz.', fx: (s) => s.set('canal') },
     ] });
 
-  ev({ id: 'panama_french', y: 1881, m: 1, place: 'panama', kind: 'econ',
-    p: (s) => (s.f.nic_canal ? 0.3 : 0.85),
+  ev({ id: 'panama_french', win: [1870, 1895], m: 1, place: 'panama', kind: 'econ',
+    p: (s) => (s.f.nic_canal ? 0.02 : 0.08),
     title: 'De Lesseps begins at Panama',
     text: 'The builder of Suez starts a sea-level canal through Panama. Malaria and yellow fever will kill some 22,000 workers.',
     fx: (s) => s.after(8, 'panama_crash') });
@@ -790,18 +790,18 @@
     when: (s) => s.oid('CA-BC') !== 'GBR',
     title: 'Colony of British Columbia', text: 'The Fraser River gold rush brings a crown colony.',
     fx: (s) => s.own('CA-BC', 'GBR:British Columbia') });
-  ev({ id: 'confederation', y: 1867, m: 7, place: 'ottawa', kind: 'politics', major: true,
-    p: (s) => (s.f.csa_independent ? 0.98 : 0.92),
+  ev({ id: 'confederation', win: [1858, 1885], m: 7, place: 'ottawa', kind: 'politics', major: true,
+    p: (s) => (s.f.csa_independent ? 0.3 : 0.15),
     title: 'Canadian Confederation',
     text: 'Ontario, Quebec, New Brunswick and Nova Scotia unite as the Dominion of Canada.',
     fx: (s) => { s.own(['CA-ON', 'CA-QC', 'CA-NB', 'CA-NS'], 'CAN'); s.after(3, 'rupert'); s.after(4, 'bc_joins'); s.after(6, 'pei'); } });
   ev({ id: 'rupert', sched: true, m: 7, place: 'redriver', kind: 'politics', title: "Rupert's Land joins Canada",
-    text: 'After the Red River Resistance led by Louis Riel, Manitoba becomes a province.',
+    text: (s) => `After the Red River Resistance led by ${s.fig('metis', 'fr', 'Métis resistance leader', '')}, Manitoba becomes a province.`,
     fx: (s) => s.own('RUPERT', 'CAN') });
   ev({ id: 'bc_joins', sched: true, m: 7, place: 'victoria', kind: 'politics', title: 'British Columbia joins Canada',
     fx: (s) => { s.own('CA-BC', 'CAN'); if (s.oid('US-WA') === 'GBR') s.own('US-WA', 'CAN'); if (s.oid('US-AK') === 'GBR') s.own('US-AK', 'CAN'); } });
   ev({ id: 'pei', sched: true, m: 7, place: 'quebec', kind: 'politics', title: 'Prince Edward Island joins Canada', fx: (s) => s.own('CA-PE', 'CAN') });
-  ev({ id: 'klondike', y: 1896, m: 8, place: 'klondike', kind: 'econ', title: 'Klondike gold', text: 'Gold on Bonanza Creek draws 100,000 stampeders north.' });
+  ev({ id: 'klondike', win: [1880, 1910], m: 8, p: 0.08, place: 'klondike', kind: 'econ', title: 'Klondike gold', text: 'Gold on Bonanza Creek draws 100,000 stampeders north.' });
 
   // ------------------------------------------------------------------ Caribbean, 1840–1900
   ev({ id: 'dominican', y: 1844, m: 2, place: 'santodomingo', kind: 'revolt',
@@ -817,7 +817,7 @@
     when: (s) => s.oid('CUB') === 'ESP',
     p: (s) => S(8 * (s.v.cu_unrest - 0.35)),
     title: "Grito de Yara: the Ten Years' War",
-    text: 'Carlos Manuel de Céspedes frees his slaves and calls Cubans to arms against Spain.',
+    text: (s) => `The planter ${s.fig('cuba:1868', 'es', 'Leader of the first Cuban war of independence', 'CUB')} frees his slaves and calls Cubans to arms against Spain.`,
     fx: (s) => { s.set('cuba_war_1868'); s.add('cu_unrest', 0.1); s.after(10, 'zanjon'); } });
   ev({ id: 'zanjon', sched: true, m: 2, place: 'santiagocuba', kind: 'treaty', title: 'Pact of Zanjón',
     text: 'The rebellion ends in exhaustion. Spain promises reforms; slavery is abolished in 1886.', fx: (s) => s.add('cu_unrest', -0.1) });
@@ -835,15 +835,15 @@
   ev({ id: 'cuba_1895', win: [1894, 1897], m: 2, place: 'santiagocuba', kind: 'revolt', major: true,
     when: (s) => s.oid('CUB') === 'ESP',
     p: (s) => 0.2 + S(8 * (s.v.cu_unrest - 0.5)) * 0.6,
-    title: 'Martí and the War of Independence',
-    text: 'José Martí and Máximo Gómez land in Oriente. Weyler\'s reconcentration camps kill perhaps 170,000 civilians.',
+    title: 'The Cuban War of Independence',
+    text: (s) => `The poet ${s.fig('cuba:poet', 'es', 'Poet and leader of Cuban independence', 'CUB')} and General ${s.fig('cuba:general', 'es', 'Cuban independence general', 'CUB')} land in Oriente. Spain's reconcentration camps kill tens of thousands of civilians.`,
     fx: (s) => s.set('cuba_war_1895') });
 
   ev({ id: 'war_1898', win: [1896, 1900], m: 4, place: 'havana', kind: 'war', major: true,
     when: (s) => s.f.cuba_war_1895 && s.oid('CUB') === 'ESP',
     p: 0.6,
     title: 'Who will intervene in Cuba?',
-    text: 'The USS Maine is in Havana harbor; the Mexican navy is at Veracruz. Both capitals are under public pressure to act.',
+    text: 'An American cruiser explodes in Havana harbor; the Mexican navy is at Veracruz. Both capitals are under public pressure to act.',
     otl: 'In our timeline the United States fought Spain alone in 1898 and took Puerto Rico, Guam and the Philippines.',
     averted: 'No "splendid little war" in 1898',
     game: {
@@ -860,8 +860,8 @@
       outcome: (i, j) => (i === 0 && j === 1 ? 0 : i === 1 && j === 0 ? 1 : i === 0 ? 2 : 3),
     },
     outcomes: [
-      { title: 'The Spanish–American War', text: 'Dewey sinks the Spanish fleet at Manila; Santiago falls. Cuba becomes independent under U.S. tutelage.', fx: (s) => { s.own('CUB', 'CUB:Republic of Cuba (U.S. protectorate)'); s.own('PRI', 'USA'); s.set('us_empire'); } },
-      { title: 'The Spanish–Mexican War', place: 'santiagocuba', text: 'The Mexican fleet destroys Cervera\'s squadron off Santiago. Cuba becomes independent in alliance with Mexico, and Puerto Rico joins the kingdom.', fx: (s) => { s.own('CUB', 'CUB:Republic of Cuba (Mexican alliance)'); s.own('PRI', 'MEX'); s.add('mx_stab', 0.05); } },
+      { title: 'The Spanish–American War', text: (s) => `Commodore ${s.fig('us:admiral', 'en', 'U.S. naval commander against Spain', 'USA')} sinks the Spanish fleet at Manila; Santiago falls. Cuba becomes independent under U.S. tutelage.`, fx: (s) => { s.own('CUB', 'CUB:Republic of Cuba (U.S. protectorate)'); s.own('PRI', 'USA'); s.set('us_empire'); } },
+      { title: 'The Spanish–Mexican War', place: 'santiagocuba', text: (s) => `Admiral ${s.fig('mx:admiral', 'es', 'Mexican admiral in the war with Spain', 'MEX')}'s fleet destroys the Spanish squadron off Santiago. Cuba becomes independent in alliance with Mexico, and Puerto Rico joins Mexico.`, fx: (s) => { s.own('CUB', 'CUB:Republic of Cuba (Mexican alliance)'); s.own('PRI', 'MEX'); s.add('mx_stab', 0.05); } },
       { title: 'Joint intervention and a guaranteed Cuba', text: 'A tense joint intervention. Washington and Mexico City guarantee Cuban independence and split the spoils: Puerto Rico to the U.S.', fx: (s) => { s.own('CUB', 'CUB:Republic of Cuba (jointly guaranteed)'); s.own('PRI', 'USA'); } },
       { title: 'Nobody intervenes; Spain grants autonomy', text: 'Madrid concedes a Cuban autonomous government. The war grinds on in the east.', fx: (s) => s.add('cu_unrest', 0.1) },
     ] });
@@ -871,8 +871,8 @@
     p: 0.7,
     title: 'The Philippine Revolution',
     outcomes: [
-      { title: 'Annexed by the United States', w: (s) => (s.f.us_empire ? 1 : 0), text: 'Spain sells the islands for $20 million; Aguinaldo\'s republic fights the new colonizers.', fx: (s) => s.own('PHL', 'USA') },
-      { title: 'The First Philippine Republic', w: (s) => (s.f.us_empire ? 0.1 : 0.6), text: 'Aguinaldo proclaims independence at Kawit and holds Luzon.', fx: (s) => s.own('PHL', 'LOCAL:First Philippine Republic') },
+      { title: 'Annexed by the United States', w: (s) => (s.f.us_empire ? 1 : 0), text: (s) => `Spain sells the islands for $20 million; ${s.fig('phl:leader', 'es', 'Leader of the Philippine Revolution', '')}'s republic fights the new colonizers.`, fx: (s) => s.own('PHL', 'USA') },
+      { title: 'The First Philippine Republic', w: (s) => (s.f.us_empire ? 0.1 : 0.6), text: (s) => `${s.fig('phl:leader', 'es', 'Leader of the Philippine Revolution', '')} proclaims independence at Kawit and holds Luzon.`, fx: (s) => s.own('PHL', 'LOCAL:First Philippine Republic') },
       { title: 'Spain sells the islands to Germany', w: (s) => (s.f.us_empire ? 0 : 0.3), fx: (s) => s.own('PHL', 'GER') },
     ] });
 
@@ -880,7 +880,7 @@
     when: (s) => s.oid('US-HI') === 'LOCAL',
     p: (s) => (s.f.us_empire ? 0.6 : s.oid('US-CA') === 'USA' ? 0.15 : 0.08),
     title: 'The end of the Hawaiian Kingdom',
-    text: 'Sugar planters overthrow Queen Liliʻuokalani.',
+    text: (s) => `Sugar planters overthrow Queen ${['Kapiʻolani', 'Kekaulike', 'Kalanikupule', 'Keōpūolani'][Math.floor(AH.hash(s.seed, 'hawaii', 0) * 4)]} II.`,
     outcomes: [
       { title: 'Annexed by the United States', w: (s) => (s.oid('US-CA') === 'USA' ? 0.85 : 0.5), fx: (s) => s.own('US-HI', 'USA') },
       { title: 'A British protectorate', w: (s) => (s.oid('US-CA') === 'USA' ? 0.1 : 0.35), fx: (s) => s.own('US-HI', 'GBR:Hawaii (British protectorate)') },
@@ -890,8 +890,8 @@
   // ------------------------------------------------------------------ South America, late century
   ev({ id: 'falklands', y: 1833, m: 1, place: 'buenosaires', kind: 'colonial', bg: true, title: 'Britain seizes the Falklands', fx: (s) => s.own('FLK', 'GBR') });
   ev({ id: 'magallanes', y: 1843, m: 9, place: 'puntaarenas', kind: 'colonial', bg: true, title: 'Chile founds Fuerte Bulnes on the Strait of Magellan', fx: (s) => s.own('MAGALLANES', 'CHL') });
-  ev({ id: 'paraguayan_war', y: 1864, m: 12, place: 'humaita', kind: 'war', p: 0.85,
-    title: 'The War of the Triple Alliance', text: 'Paraguay under Solano López fights Brazil, Argentina and Uruguay; it loses perhaps half its population.' });
+  ev({ id: 'paraguayan_war', win: [1850, 1885], m: 12, place: 'humaita', kind: 'war', p: 0.05,
+    title: 'The War of the Triple Alliance', text: (s) => `Paraguay under Marshal ${s.fig('paraguay', 'es', 'Dictator of Paraguay', 'PAR')} fights Brazil, Argentina and Uruguay; it loses perhaps half its population.` });
   ev({ id: 'pacific_war', win: [1879, 1883], m: 2, place: 'antofagasta', kind: 'war', major: true, p: 0.7,
     when: (s) => s.oid('ANTOFAGASTA') === 'BOL',
     title: 'The War of the Pacific',
@@ -900,12 +900,12 @@
       { title: 'Chile takes the nitrate coast', w: 0.85, fx: (s) => s.own(['ANTOFAGASTA', 'TARAPACA'], 'CHL') },
       { title: 'A compromise peace', w: 0.15, fx: (s) => s.own('ANTOFAGASTA', 'CHL') },
     ] });
-  ev({ id: 'desert', y: 1879, m: 5, place: 'patagones', kind: 'war', title: 'The Conquest of the Desert',
-    text: 'Roca\'s army pushes Argentina\'s frontier to the Río Negro and beyond, killing or displacing the Mapuche and Tehuelche.', fx: (s) => s.own(['PATAGONIA', 'CHACO'], 'ARG') });
-  ev({ id: 'araucania', y: 1883, m: 1, place: 'temuco', kind: 'war', title: 'Chile occupies the Araucanía', fx: (s) => s.own('ARAUCANIA', 'CHL') });
-  ev({ id: 'aysen', y: 1885, m: 1, place: 'puntaarenas', kind: 'colonial', bg: true, title: 'Chile claims Aysén', fx: (s) => s.own('MAGALLANES', 'CHL') });
-  ev({ id: 'brazil_abolition', y: 1888, m: 5, place: 'rio', kind: 'politics', title: 'The Golden Law: Brazil abolishes slavery', text: 'The last slave society in the Western world ends slavery.' });
-  ev({ id: 'brazil_republic', y: 1889, m: 11, place: 'rio', kind: 'politics', title: 'Brazil becomes a republic',
+  ev({ id: 'desert', win: [1860, 1900], m: 5, place: 'patagones', kind: 'war', p: 0.07, title: 'The Conquest of the Desert',
+    text: (s) => `General ${s.fig('arg:general', 'es', 'Argentine general of the desert campaign', 'ARG')}'s army pushes Argentina's frontier to the Río Negro and beyond, killing or displacing the Mapuche and Tehuelche.`, fx: (s) => s.own(['PATAGONIA', 'CHACO'], 'ARG') });
+  ev({ id: 'araucania', win: [1860, 1900], m: 1, p: 0.07, place: 'temuco', kind: 'war', title: 'Chile occupies the Araucanía', fx: (s) => s.own('ARAUCANIA', 'CHL') });
+  ev({ id: 'aysen', win: [1875, 1905], m: 1, p: 0.1, place: 'puntaarenas', kind: 'colonial', bg: true, title: 'Chile claims Aysén', fx: (s) => s.own('MAGALLANES', 'CHL') });
+  ev({ id: 'brazil_abolition', win: [1860, 1905], m: 5, p: 0.06, place: 'rio', kind: 'politics', title: 'The Golden Law: Brazil abolishes slavery', text: 'The last slave society in the Western world ends slavery.' });
+  ev({ id: 'brazil_republic', win: [1870, 1930], m: 11, p: 0.04, place: 'rio', kind: 'politics', title: 'Brazil becomes a republic',
     fx: (s) => s.own('BRA', 'BRA:United States of Brazil') });
   ev({ id: 'panama_sep', win: [1885, 1900], m: 11, place: 'panama', kind: 'revolt',
     when: (s) => s.oid('PAN') === 'COL' || s.oid('PAN') === 'GCO',

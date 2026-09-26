@@ -45,8 +45,10 @@
     <aside class="rail">
       <div class="tabs" role="tablist">
         <button type="button" role="tab" id="tabChron" aria-selected="true" data-panel="panelChron">Chronicle</button>
+        <button type="button" role="tab" id="tabPowers" aria-selected="false" data-panel="panelPowers">Powers</button>
+        <button type="button" role="tab" id="tabPeople" aria-selected="false" data-panel="panelPeople">People</button>
         <button type="button" role="tab" id="tabOdds" aria-selected="false" data-panel="panelOdds">Odds</button>
-        <button type="button" role="tab" id="tabMex" aria-selected="false" data-panel="panelMex">Kingdom</button>
+        <button type="button" role="tab" id="tabMex" aria-selected="false" data-panel="panelMex">Mexico</button>
         <button type="button" role="tab" id="tabAbout" aria-selected="false" data-panel="panelAbout">Model</button>
       </div>
 
@@ -54,6 +56,22 @@
         <div class="forces" id="forces" hidden></div>
         <label class="check"><input type="checkbox" id="showWorld"> Include background world events</label>
         <ol class="chron" id="chron"></ol>
+      </div>
+
+      <div class="panel" id="panelPowers" role="tabpanel" hidden>
+        <p class="lede">The great powers in <span id="powersYear">1808</span>, ranked by military-industrial strength (population<sup>0.6</sup> × output per head<sup>2.5</sup>, adjusted for mobilization, stability and oil).</p>
+        <div class="table-wrap"><table class="ptable" id="powersTable"></table></div>
+        <h3>Share of great-power strength</h3>
+        <div class="stack tall" id="powersStack"></div>
+        <p class="note">GDP is in billions of 1990 international dollars; GDP per head in thousands. Our timeline in 2000, for scale: U.S. 28.4k, Britain 19.8k, Germany 18.6k, Japan 21.0k, Mexico 7.2k, Russia 5.3k, China 3.4k.</p>
+      </div>
+
+      <div class="panel" id="panelPeople" role="tabpanel" hidden>
+        <p class="lede">Nobody conceived after the divergence is the same person, so from the mid-century on every ruler, rebel, general and inventor in this history is new. Names are generated from each country's naming traditions.</p>
+        <h3>Heads of state in <span id="peopleYear">1808</span></h3>
+        <div id="rulersNow" class="rulers"></div>
+        <h3>People of this history</h3>
+        <ol class="people" id="peopleList"></ol>
       </div>
 
       <div class="panel" id="panelOdds" role="tabpanel" hidden>
@@ -77,7 +95,8 @@
 
       <div class="panel prose" id="panelAbout" role="tabpanel" hidden>
         <h3>How the simulation works</h3>
-        <p>History starts on 1 January 1808 with the world as it was. In September the Mexico City junta survives instead of falling to Gabriel de Yermo's coup. From then on, about 370 events are rolled year by year, through to 2000.</p>
+        <p>History starts on 1 January 1808 with the world as it was. In September the Mexico City junta survives instead of falling to Gabriel de Yermo's coup. From then on, events are rolled year by year, through to 2000.</p>
+        <p>The divergence spreads outward. Events whose actors were already alive in 1808 (Napoleon's wars, the Congress of Vienna, Greek independence) play out much as they did. From about 1850 the wider world is simulated rather than scripted. Twelve great powers carry population, output per head, stability and militarization; industrial revolutions, unifications, wars, revolutions, colonial empires, decolonization and inventions are recurring processes whose odds come from those numbers, and whose results feed back into them. Rivalries have structural baselines (lost provinces, shared borders, naval races, ideology) and general wars form their alliances from them. Nuclear weapons, once two powers have them, make general war rare.</p>
         <p>Each event has a probability that depends on the state of the world. Examples are Mexico's stability, treasury and army; U.S. population and sectional tension; the share of Anglo-American settlers in Texas; and Spain's capacity to send armies overseas. For an event with a window of years, the probability is a yearly hazard. When an event fires, its outcome is sampled by weight, and the outcome changes the state that later events read.</p>
         <p>Some decisions are small strategic games, such as Havana's planters in 1808, Ferdinand VII in 1814 and Polk in 1846. Their outcome weights come from a quantal-response equilibrium: each side usually picks its better option, but not always. Open one of these events in the Chronicle to see its payoff matrix and the pure Nash equilibrium.</p>
         <p>Rolls are hashed from the seed, the event and the year. If you rewrite one decision, later history changes only through its consequences. Everything else keeps the same luck.</p>
@@ -123,10 +142,14 @@
 <script src="js/powers.js"></script>
 <script src="js/regions.js"></script>
 <script src="js/places.js"></script>
+<script src="js/names.js"></script>
 <script src="js/model.js"></script>
+<script src="js/world.js"></script>
+<script src="js/world-tables.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/events-americas.js"></script>
 <script src="js/events-world.js"></script>
+<script src="js/events-process.js"></script>
 <script src="js/events-modern.js"></script>
 <script src="js/map.js"></script>
 <script src="js/app.js"></script>
