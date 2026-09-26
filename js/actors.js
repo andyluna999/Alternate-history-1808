@@ -128,19 +128,35 @@
     for (const q of AH.majorsAlive(s)) if (q !== ruler && s.P[ruler]) { const x = AH.tension(s, ruler, q); if (x > t) { t = x; best = q; } }
     return [best, t];
   }
+  // Cumulative "not yet" probability for most-likely mode; true once it passes 50%.
+  function likelyCum(s, tag, p, reset) {
+    s.cumC = s.cumC || {};
+    const cum = (s.cumC[tag] === undefined ? 1 : s.cumC[tag]) * (1 - p);
+    s.cumC[tag] = cum;
+    if (cum <= 0.5 && reset) delete s.cumC[tag];
+    return cum <= 0.5;
+  }
   const sepHazard = (s, c) => {
     const st = s.C[c.id];
     if (!st.ruler || c.custom || st.cool > 0 || s.y < c.awaken) return 0;
     return 0.22 * S(11 * (st.griev - 0.5));
   };
   ev({ id: 'separatism', repeat: true, win: [1808, 2000], m: 4, place: 'warsaw', kind: 'revolt',
-    p: (s) => 1 - AH.COMMUNITIES.reduce((q, c) => q * (1 - sepHazard(s, c)), 1),
+    // In "most likely" mode each people keeps its own cumulative hazard, and a
+    // crisis happens only once that passes 50%.
+    p: (s) => {
+      if (!s.likely) return 1 - AH.COMMUNITIES.reduce((q, c) => q * (1 - sepHazard(s, c)), 1);
+      let any = 0;
+      for (const c of AH.COMMUNITIES) if (likelyCum(s, 'sep:' + c.id, sepHazard(s, c))) any = 1;
+      return any;
+    },
     title: 'A national movement challenges its rulers',
     fx: (s) => {
-      const cs = AH.COMMUNITIES.filter((c) => sepHazard(s, c) > 0);
+      const cs = AH.COMMUNITIES.filter((c) => sepHazard(s, c) > 0 && (!s.likely || s.cumC['sep:' + c.id] <= 0.5));
       const i = s.pick('sep:who', cs.map((c) => sepHazard(s, c)));
       if (i < 0) { s.cur.cancel = true; return; }
       const c = cs[i], st = s.C[c.id], ruler = st.ruler;
+      if (s.likely) delete s.cumC['sep:' + c.id];
       const P = s.P[ruler];
       const demo = AH.democratic(s, ruler), dict = P && (P.gov === 'dictatorship' || P.gov === 'communist');
       const cap = capacity(s, ruler, c);
@@ -237,7 +253,7 @@
         if (!c.colony || !st.ruler || st.griev < 0.35) continue;
         const hold = 0.9 * (s.P[st.ruler] ? Math.sqrt(AH.strength(s, st.ruler) / (AH.majorsAlive(s).reduce((t, q) => t + AH.strength(s, q), 0) || 1)) : 0.2) + (AH.democratic(s, st.ruler) ? -0.15 : 0.1);
         const pGo = 0.4 * S(10 * (s.v.decol + 0.6 * st.griev - hold - 0.85));
-        if (AH.hash(s.seed, 'dw:' + c.id, s.y) < pGo) (byRuler[st.ruler] = byRuler[st.ruler] || []).push(c);
+        if (s.likely ? likelyCum(s, 'dw:' + c.id, pGo, true) : AH.hash(s.seed, 'dw:' + c.id, s.y) < pGo) (byRuler[st.ruler] = byRuler[st.ruler] || []).push(c);
       }
       const done = [];
       for (const [ruler, cs] of Object.entries(byRuler)) {

@@ -74,13 +74,18 @@
   AH.buildColonyCommunities = function () {
     const taken = new Set(AH.COMMUNITIES.flatMap((c) => c.keys));
     const SETTLER = new Set(['NZL', 'CAPE', 'NATAL', 'ORANGE', 'TRANSVAAL']);
+    // Mass colonial nationalism needs schools, cities and a press: it comes
+    // later where colonial rule came later.
+    const AWAKEN = { NAF: 1900, ARB: 1910, CAS: 1905, SEA: 1900, EAS: 1900, WAF: 1920, CAF: 1925, EAF: 1920, SAF: 1925, PAC: 1930 };
     for (const k of AH.COLONY_LIST) {
       if (taken.has(k) || SETTLER.has(k)) continue;
       const name = AH.KEY_NAMES[k] || k;
       const region = AH.REGION_OF[k];
+      const same = AH.COMMUNITIES.find((x) => x.colony && x.name === `People of ${name}`);
+      if (same) { same.keys.push(k); continue; }
       const COLONIAL = ['GBR', 'FRA', 'ESP', 'POR', 'NLD', 'BEL', 'GER', 'PRU', 'ITA', 'SAR', 'USA', 'MEX', 'JPN', 'RUS', 'OTT', 'EGY', 'DEN', 'SWE', 'AUT'];
       const c = { id: 'COL_' + k, only: COLONIAL, name: `People of ${name}`, keys: [k], succ: k === 'CUB' ? 'CUB:Republic of Cuba' : L(name), culture: AH.KEY_CULTURE[k] || AH.REGION_CULTURE[region] || 'en',
-        awaken: ['JAM', 'BHS', 'TTO', 'BRB', 'GUY', 'SUR', 'PRI', 'DOM', 'PHL', 'CYP'].includes(k) ? 1860 : 1885, dist: 0.9, colony: true };
+        awaken: AWAKEN[region] || (['JAM', 'BHS', 'TTO', 'BRB', 'GUY', 'SUR', 'PRI', 'DOM', 'PHL', 'CYP', 'CUB'].includes(k) ? 1870 : 1895), dist: 0.9, colony: true };
       AH.COMMUNITIES.push(c);
       AH.COMMUNITY_BY_ID[c.id] = c;
     }
@@ -169,7 +174,7 @@
       // National awakening: schooling, cities, newspapers, and others' success.
       // National awakening: schooling, newspapers, cities, and others' success.
       if (s.y === c.awaken || st.mob < 0.12) st.mob = Math.max(st.mob, 0.12);
-      const urban = 0.016 + (P && P.takeoff ? 0.01 : 0);
+      const urban = (0.016 + (P && P.takeoff ? 0.01 : 0)) * (c.colony ? 0.6 : 1);
       st.mob = clamp(st.mob + (urban + 0.02 * s.v.nat_wave + (s.y > 1900 ? 0.006 : 0)) * (1 - st.mob));
       const cu = c.custom ? customInputs(s, c) : null;
       const segT = clamp(cu && cu.segr !== undefined ? cu.segr : regimeSegregation(s, st.ruler, c) * (0.55 + 0.45 * c.dist) + st.policy);
