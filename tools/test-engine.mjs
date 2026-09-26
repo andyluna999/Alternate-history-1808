@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
-const FILES = ['powers', 'regions', 'places', 'model', 'engine', 'events-americas', 'events-world'];
+const FILES = ['powers', 'regions', 'places', 'model', 'engine', 'events-americas', 'events-world', 'events-modern'];
 for (const f of FILES) vm.runInThisContext(fs.readFileSync(`js/${f}.js`, 'utf8'), { filename: f });
 const AH = globalThis.AH;
 
@@ -48,16 +48,16 @@ const pct = (x) => (100 * x).toFixed(0).padStart(3) + '%';
 console.log('\nMost likely path, Americas:');
 for (const e of likely.log.filter((e) => !e.bg && e.kind !== 'averted')) if (AH.PLACES[e.place][0] < -30) console.log(`  ${e.y}-${String(e.m).padStart(2, '0')} ${e.title}${e.outcomeTitle ? ' → ' + e.outcomeTitle : ''}`);
 console.log('Averted:', likely.log.filter((e) => e.kind === 'averted').map((e) => e.y + ' ' + e.title).join('; '));
-console.log('1900 MEX name:', likely.years.at(-1).names.MEX, '| pop MX', likely.years.at(-1).v.mx_pop.toFixed(1), 'US', likely.years.at(-1).v.us_pop.toFixed(1));
+console.log('2000 MEX name:', likely.years.at(-1).names.MEX, '| pop MX', likely.years.at(-1).v.mx_pop.toFixed(1), 'US', likely.years.at(-1).v.us_pop.toFixed(1));
 
 console.log(`\nMonte Carlo (${mc.n} runs): share of runs where each event fired`);
-const show = ['junta', 'guatemala', 'cuba_1808', 'hidalgo', 'mx_abolition', 'ultimatum', 'expedition', 'crown', 'cam_secession', 'cuba_1826', 'texas_revolt', 'texas_annex', 'yucatan', 'crisis_1846', 'mxus_peace', 'ca_crisis', 'reforma', 'intervention', 'civil_war', 'civil_war_end', 'mx_republic', 'canal', 'cuba_1895', 'war_1898', 'gc_split'];
+const show = ['junta', 'guatemala', 'cuba_1808', 'hidalgo', 'mx_abolition', 'ultimatum', 'expedition', 'crown', 'cam_secession', 'cuba_1826', 'texas_revolt', 'texas_annex', 'yucatan', 'crisis_1846', 'mxus_peace', 'ca_crisis', 'reforma', 'intervention', 'civil_war', 'civil_war_end', 'mx_republic', 'canal', 'cuba_1895', 'war_1898', 'gc_split', 'spindletop', 'land_reform', 'mx_revolution', 'crisis_1914', 'mxus_peace2', 'mx_ww1', 'ww1_end', 'oil_nat', 'mx_ww2', 'north_referendum', 'cuba_rev', 'cam_late', 'csa_fate', 'mx_transition', 'ussr_end'];
 for (const id of show) {
   const r = mc.eventFreq[id] || { fired: 0, outcomes: {} };
   const outs = Object.entries(r.outcomes).map(([t, c]) => `${t} ${pct(c / mc.n)}`).join(' | ');
   console.log(`${pct(r.fired / mc.n)}  ${id.padEnd(15)} ${outs}`);
 }
-for (const k of ['US-TX', 'US-CA', 'NEWMEX', 'GTM', 'CUB', 'PRI', 'US-FL', 'US-VA', 'US-AK']) {
-  console.log(`1900 ${k.padEnd(7)}`, AH.ownerOdds(mc, k, 1900).map((o) => `${o.id} ${pct(o.p)}`).join(', '));
+for (const k of ['US-TX', 'US-CA', 'NEWMEX', 'GBASIN', 'GTM', 'CUB', 'PRI', 'US-VA', 'US-AK', 'PAN']) {
+  console.log(`2000 ${k.padEnd(7)}`, AH.ownerOdds(mc, k, 2000).map((o) => `${o.id} ${pct(o.p)}`).join(', '));
 }
 console.log('\nAll checks passed.');

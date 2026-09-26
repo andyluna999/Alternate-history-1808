@@ -14,7 +14,7 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-name">Reino de México</span>
-      <span class="brand-sub">What if the Mexico City junta of 1808 had survived? A simulated century.</span>
+      <span class="brand-sub">What if the Mexico City junta of 1808 had survived? Two simulated centuries.</span>
     </div>
     <nav class="views" aria-label="Map view">
       <button type="button" data-view="americas" class="on">Americas</button>
@@ -77,7 +77,7 @@
 
       <div class="panel prose" id="panelAbout" role="tabpanel" hidden>
         <h3>How the simulation works</h3>
-        <p>History starts on 1 January 1808 with the world as it was. In September the Mexico City junta survives instead of falling to Gabriel de Yermo's coup. From then on, about 230 events are rolled year by year.</p>
+        <p>History starts on 1 January 1808 with the world as it was. In September the Mexico City junta survives instead of falling to Gabriel de Yermo's coup. From then on, about 370 events are rolled year by year, through to 2000.</p>
         <p>Each event has a probability that depends on the state of the world. Examples are Mexico's stability, treasury and army; U.S. population and sectional tension; the share of Anglo-American settlers in Texas; and Spain's capacity to send armies overseas. For an event with a window of years, the probability is a yearly hazard. When an event fires, its outcome is sampled by weight, and the outcome changes the state that later events read.</p>
         <p>Some decisions are small strategic games, such as Havana's planters in 1808, Ferdinand VII in 1814 and Polk in 1846. Their outcome weights come from a quantal-response equilibrium: each side usually picks its better option, but not always. Open one of these events in the Chronicle to see its payoff matrix and the pure Nash equilibrium.</p>
         <p>Rolls are hashed from the seed, the event and the year. If you rewrite one decision, later history changes only through its consequences. Everything else keeps the same luck.</p>
@@ -95,8 +95,8 @@
     </button>
     <div class="scrub">
       <svg class="ticks" id="ticks" aria-hidden="true"></svg>
-      <input type="range" id="scrubber" min="1808" max="1900.99" step="any" value="1808" aria-label="Year">
-      <div class="scale"><span>1808</span><span>1830</span><span>1850</span><span>1870</span><span>1900</span></div>
+      <input type="range" id="scrubber" min="1808" max="2000.99" step="any" value="1808" aria-label="Year">
+      <div class="scale"><span>1808</span><span>1850</span><span>1900</span><span>1950</span><span>2000</span></div>
     </div>
     <div class="knobs">
       <label>Speed
@@ -105,6 +105,7 @@
           <option value="0.5" selected>½ yr/s</option>
           <option value="1">1 yr/s</option>
           <option value="2">2 yr/s</option>
+          <option value="4">4 yr/s</option>
         </select>
       </label>
       <div class="seg" role="group" aria-label="Simulation mode">
@@ -126,6 +127,7 @@
 <script src="js/engine.js"></script>
 <script src="js/events-americas.js"></script>
 <script src="js/events-world.js"></script>
+<script src="js/events-modern.js"></script>
 <script src="js/map.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -1,6 +1,6 @@
-# Reino de México, 1808–1900
+# Reino de México, 1808–2000
 
-An interactive, animated map of an alternate nineteenth century. It starts from one change: in September 1808 the Mexico City junta (Iturrigaray, Primo de Verdad, Azcárate, Talamantes) survives Gabriel de Yermo's coup. It then governs New Spain as a de facto sovereign kingdom, in the name of the captive Ferdinand VII.
+An interactive, animated map of an alternate nineteenth century. It starts from one change: in September 1808 the Mexico City junta (Iturrigaray, Primo de Verdad, Azcárate, Talamantes) survives Gabriel de Yermo's coup. It then governs New Spain as a de facto sovereign kingdom, in the name of the captive Ferdinand VII. The simulation runs from there to the year 2000.
 
 The map works at state and province level. Press play and watch a statistically simulated history spread outward from Mexico City. Every event is pinned to the city or province where it happens.
 
@@ -15,7 +15,7 @@ There is no build step. D3 and topojson-client are vendored in `vendor/`, and th
 
 ## What you can do
 
-- **Play / scrub** from 1808 to 1900. Borders re-color province by province, and markers pulse where events happen.
+- **Play / scrub** from 1808 to 2000. Borders re-color province by province, and markers pulse where events happen.
 - **Chronicle**: every event in this history, with its probability. Open an event to see its possible outcomes, their weights, and, for strategic decisions, the payoff matrix with its Nash equilibrium. Pick a different outcome, prevent the event, or force an "averted" one, and the rest of the century is re-simulated.
 - **Odds**: 200 sampled histories run in the background with your choices. The tab shows who holds Texas, California, Cuba and other territories in any year, and how often our timeline's landmarks happen (the Texas Revolution, the Mexican–American War, Maximilian, 1898…). Switch the map to **Odds across runs** to color every province by its most likely owner.
 - **Kingdom**: Mexican population and territory against our timeline's census figures, plus the state variables that drive the model.
@@ -25,7 +25,7 @@ There is no build step. D3 and topojson-client are vendored in `vendor/`, and th
 
 `js/model.js` holds a small set of state variables: Mexican stability, treasury and army; U.S. population, expansion pressure and sectional tension; Spain's overseas capacity; Anglo-Mexican alignment; the Anglo share of Texas settlers; Cuban separatism; and others. They drift every year.
 
-Events in `js/events-americas.js` and `js/events-world.js` have:
+Events in `js/events-americas.js`, `js/events-world.js` and `js/events-modern.js` (1900–2000) have:
 
 | field | meaning |
 |---|---|
@@ -35,6 +35,13 @@ Events in `js/events-americas.js` and `js/events-world.js` have:
 | `outcomes` | weighted outcomes that transfer territory and change the state |
 | `game` | an optional 2×2 game. Outcome weights come from its logit quantal-response equilibrium |
 | `otl` | what happened in our timeline. If the window closes without the event, the chronicle logs it as averted |
+
+The 20th-century layer keeps the same mechanics. Examples:
+- Mexican agrarian tension drives either a revolution or a negotiated land reform.
+- A second U.S.–Mexican crisis is most likely while Mexico is in civil war.
+- Texas oil (Spindletop, 1901) makes Mexico an oil power, with an expropriation game in the 1920s–60s.
+- A sovereignty referendum in the English-speaking north, modeled on Quebec's.
+- The world wars, decolonization and the end of the Soviet Union mostly follow our timeline. They transfer territory only from whoever holds it in this run.
 
 Randomness is hashed from `(seed, event, year)`. Changing one outcome alters later history only through the state it leaves behind, the "butterfly" path. Far from Mexico, events mostly follow our timeline as background.
 
@@ -49,7 +56,7 @@ js/regions.js                  historical territories and the 1808 world
 js/places.js                   cities and provinces events point to
 js/model.js                    state variables and yearly drift
 js/engine.js                   simulation, game solver, Monte Carlo
-js/events-*.js                 the event scripts
+js/events-*.js                 the event scripts (Americas, world, 1900–2000)
 js/map.js, js/app.js           D3 renderer and UI
 data/world.topo.json           Natural Earth admin-1 (+ rivers, lakes), simplified
 tools/build-map.mjs            rebuilds the map data (npm run build:map)

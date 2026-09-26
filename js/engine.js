@@ -5,8 +5,9 @@
 // changes later history only through the state it leaves behind; it does not
 // reshuffle every later dice roll.
 (function (AH) {
-  const START = 1808, END = 1900;
+  const START = 1808, END = 2000;
   AH.START = START; AH.END = END;
+  const KEY_STRIDE = 640; // more than the number of territory keys
 
   function hash(seed, str, n) {
     let h = (seed ^ 0x9e3779b9) >>> 0;
@@ -196,7 +197,7 @@
     for (let c = 0; c < count && mc.done < mc.n; c++, mc.done++) {
       const r = AH.simulate({ seed: mc.seed0 + mc.done * 7919, forces: mc.forces });
       for (const y of r.years) for (const k in y.owners) if (!mc.keyIndex.has(k)) { mc.keyIndex.set(k, mc.keys.length); mc.keys.push(k); }
-      const K = 1024; // fixed stride; the world has fewer keys than this
+      const K = KEY_STRIDE;
       const grid = new Uint8Array(nYears * K).fill(255);
       r.years.forEach((y, yi) => { for (const k in y.owners) grid[yi * K + mc.keyIndex.get(k)] = mc.pIndex[AH.ownerId(y.owners[k])]; });
       mc.grids.push(grid);
@@ -222,7 +223,7 @@
     const counts = {};
     const fallback = AH.ownerId(AH.defaultOwner(key));
     for (const g of mc.grids) {
-      const v = ki === undefined ? 255 : g[yi * 1024 + ki];
+      const v = ki === undefined ? 255 : g[yi * KEY_STRIDE + ki];
       const id = v === 255 ? fallback : mc.powerIds[v];
       counts[id] = (counts[id] || 0) + 1;
     }

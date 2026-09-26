@@ -52,7 +52,12 @@
       const id = AH.ownerId(owner);
       const p = AH.POWERS[id] || AH.POWERS.LOCAL;
       const c = d3.hsl(p.color);
-      if (id === 'LOCAL') c.l += ((Math.abs(hashStr(owner)) % 7) - 3) * 0.018;
+      if (id === 'LOCAL') {
+        // Independent states get one of several muted tints so neighbors stay distinct.
+        const tints = ['#d9d1be', '#cfd8c0', '#dcc9c5', '#c8d4da', '#ddd0ad', '#d1c7da', '#c6d7c8', '#e2d2bf', '#cdd0e0'];
+        const t = d3.hsl(tints[Math.abs(hashStr(owner)) % tints.length]);
+        c.h = t.h; c.s = t.s; c.l = t.l;
+      }
       if (dark()) { c.l = c.l * 0.55 + 0.02; c.s *= 0.8; }
       return c.formatHex();
     }

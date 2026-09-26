@@ -6,7 +6,7 @@
     guadalajara: [-103.35, 20.67, 'Guadalajara'], guanajuato: [-101.26, 21.02, 'Guanajuato'], dolores: [-100.93, 21.16, 'Dolores'],
     queretaro: [-100.39, 20.59, 'Querétaro'], zacatecas: [-102.57, 22.77, 'Zacatecas'], puebla: [-98.2, 19.04, 'Puebla'],
     merida: [-89.62, 20.97, 'Mérida'], tampico: [-97.86, 22.25, 'Tampico'], monterrey: [-100.31, 25.67, 'Monterrey'],
-    sanantonio: [-98.49, 29.42, 'San Antonio de Béxar'], nacogdoches: [-94.65, 31.6, 'Nacogdoches'], galveston: [-94.8, 29.3, 'Galveston'],
+    sanantonio: [-98.49, 29.42, 'San Antonio de Béxar'], nacogdoches: [-94.65, 31.6, 'Nacogdoches'], galveston: [-94.8, 29.3, 'Galveston'], beaumont: [-94.1, 30.08, 'Beaumont'],
     santafe: [-105.94, 35.69, 'Santa Fe'], monterey: [-121.89, 36.6, 'Monterey'], sanfrancisco: [-122.42, 37.77, 'San Francisco'],
     losangeles: [-118.24, 34.05, 'Los Ángeles'], sutter: [-120.89, 38.8, "Sutter's Mill"], fortross: [-123.24, 38.51, 'Fort Ross'],
     tehuantepec: [-95.24, 16.32, 'Tehuantepec'], guatemala: [-90.51, 14.63, 'Guatemala City'], granada: [-85.96, 11.93, 'Granada'],

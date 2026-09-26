@@ -34,6 +34,7 @@
 
     // ---- France's moving frontiers ----
     ['SAVOY', 'Savoy & Nice', ['FR-73', 'FR-74', 'FR-06']],
+    ['FR_OVERSEAS', 'French overseas colonies', ['FR-GF', 'FR-MQ', 'FR-GP', 'FR-RE', 'FR-YT']],
     ['ALSACE', 'Alsace-Lorraine', ['FR-67', 'FR-68', 'FR-57']],
 
     // ---- Germany ----
@@ -47,11 +48,18 @@
     ['SOUTH_DE', 'Bavaria, Württemberg & Baden', ['DE-BY', 'DE-BW']],
     ['HOLSTEIN', 'Schleswig-Holstein', ['DE-SH']],
     ['BRANDENBURG', 'Brandenburg', ['DE-BB', 'DE-BE']],
-    ['PRU_EAST', 'Pomerania, Silesia & East Prussia', ['PL-ZP', 'PL-PM', 'PL-WN', 'RU-KGD', 'PL-DS', 'PL-OP', 'PL-SL', 'PL-LB']],
+    ['PRU_EAST', 'Pomerania & Lower Silesia', ['PL-ZP', 'PL-DS', 'PL-OP', 'PL-LB']],
+    ['CORRIDOR', 'West Prussia & Danzig', ['PL-PM']],
+    ['UPPER_SIL', 'Upper Silesia', ['PL-SL']],
+    ['E_PRUSSIA', 'Southern East Prussia (Masuria)', ['PL-WN']],
+    ['KONIGSBERG', 'Königsberg', ['RU-KGD']],
     ['POSEN', 'Posen & West Prussia', ['PL-WP', 'PL-KP']],
     ['WARSAW', 'Masovia (Warsaw)', ['PL-MZ', 'PL-LD', 'PL-PD']],
     ['W_GALICIA', 'Kraków, Lublin & Sandomierz', ['PL-SK', 'PL-LU', 'PL-MA']],
-    ['GALICIA', 'Galicia & Bukovina', ['PL-PK', 'UA-46', 'UA-26', 'UA-61', 'UA-77', 'RO-SV']],
+    ['GALICIA_W', 'Western Galicia (Rzeszów)', ['PL-PK']],
+    ['GALICIA', 'Eastern Galicia (Lviv)', ['UA-46', 'UA-26', 'UA-61']],
+    ['BUKOVINA', 'Bukovina', ['UA-77', 'RO-SV']],
+    ['VOLHYNIA', 'Volhynia', ['UA-07', 'UA-56']],
     ['RUTHENIA', 'Carpathian Ruthenia', ['UA-21']],
 
     // ---- Italy ----
@@ -92,8 +100,10 @@
     ['BENGAL', 'Bengal Presidency & the Doab', ['IN-WB', 'IN-BR', 'IN-JH', 'IN-OR', 'IN-UP', 'IN-DL', 'IN-UT', 'IN-TR', 'IN-ML']],
     ['MADRAS', 'Madras, Mysore & Hyderabad', ['IN-TN', 'IN-AP', 'IN-TG', 'IN-KL', 'IN-KA', 'IN-AN']],
     ['MARATHA', 'Maratha & Rajput lands', ['IN-MH', 'IN-MP', 'IN-GJ', 'IN-CT', 'IN-RJ']],
-    ['PUNJAB', 'Punjab & Peshawar', ['IN-PB', 'IN-HR', 'IN-HP', 'PK-PB', 'PK-IS', 'PK-KP']],
-    ['KASHMIR', 'Kashmir & Ladakh', ['IN-JK', 'IN-LA', 'PK-JK', 'PK-GB']],
+    ['PUNJAB', 'East Punjab', ['IN-PB', 'IN-HR', 'IN-HP']],
+    ['PUNJAB_PK', 'West Punjab & Peshawar', ['PK-PB', 'PK-IS', 'PK-KP']],
+    ['KASHMIR', 'Jammu, Kashmir & Ladakh', ['IN-JK', 'IN-LA']],
+    ['KASHMIR_PK', 'Azad Kashmir & Gilgit', ['PK-JK', 'PK-GB']],
     ['ASSAM', 'Assam & the north-east hills', ['IN-AS', 'IN-AR', 'IN-NL', 'IN-MN', 'IN-MZ']],
     ['SIKKIM', 'Sikkim', ['IN-SK']],
     ['GOA', 'Goa, Daman & Diu', ['IN-GA', 'IN-DH']],
@@ -103,8 +113,13 @@
 
     // ---- East Asia ----
     ['JIANGNAN', 'Jiangnan (Nanjing)', ['CN-JS', 'CN-AH', 'CN-ZJ', 'CN-JX', 'CN-SH']],
+    ['MANCHURIA', 'Manchuria', ['CN-HL', 'CN-JL', 'CN-LN']],
+    ['NORTH_CHINA', 'North China Plain', ['CN-BJ', 'CN-TJ', 'CN-HE', 'CN-SD', 'CN-SX', 'CN-HA']],
+    ['SOUTH_COAST', 'Guangdong & Fujian coast', ['CN-GD', 'CN-FJ', 'CN-HI']],
+    ['TIBET', 'Tibet', ['CN-XZ']],
     ['XINJIANG', 'Xinjiang (Kashgaria)', ['CN-XJ']],
     ['COCHINCHINA', 'Cochinchina', [(p) => p.c === 'VNM' && p.y < 11.9]],
+    ['ANNAM_S', 'Southern Annam', [(p) => p.c === 'VNM' && p.y < 17.1]],
 
     // ---- Southern Africa ----
     ['CAPE', 'Cape Colony', ['ZA-WC', 'ZA-EC', 'ZA-NC']],
@@ -136,6 +151,11 @@
   // Shorthands for the event scripts.
   AH.CENTAM = ['GTM', 'SLV', 'HND', 'NIC', 'CRI', 'CHIAPAS'];
   AH.NEW_SPAIN = ['MEX', 'YUCATAN', 'QROO', 'US-TX', 'NEWMEX', 'US-CA', 'GBASIN'];
+  AH.PRUSSIA_ALL = ['PRU_EAST', 'CORRIDOR', 'UPPER_SIL', 'E_PRUSSIA', 'KONIGSBERG'];
+  AH.PUNJAB_ALL = ['PUNJAB', 'PUNJAB_PK'];
+  AH.KASHMIR_ALL = ['KASHMIR', 'KASHMIR_PK'];
+  AH.VNM_ALL = ['VNM', 'ANNAM_S', 'COCHINCHINA'];
+  AH.CHINA_ALL = ['CHN', 'JIANGNAN', 'MANCHURIA', 'NORTH_CHINA', 'SOUTH_COAST', 'TIBET', 'XINJIANG'];
   AH.CSA_STATES = ['US-SC', 'US-MS', 'US-FL', 'US-AL', 'US-GA', 'US-LA', 'US-VA', 'US-AR', 'US-TN', 'US-NC'];
 
   // ---- The world on 1 January 1808 ----
@@ -155,11 +175,11 @@
     ARAUCANIA: 'NATIVE:Mapuche (Wallmapu)', MAGALLANES: 'NATIVE:Tehuelche & Kawésqar lands',
     // Europe
     ESP: 'ESP', ESP_CENTER: 'ESP', ESP_CAT: 'ESP', ESP_ARA: 'ESP', ESP_AND: 'ESP', ESP_EXT: 'ESP', ESP_VAL: 'ESP', PRT: 'FRA:Portugal (French occupation)',
-    FRA: 'FRA', SAVOY: 'FRA', ALSACE: 'FRA', BEL: 'FRA', LUX: 'FRA', NLD: 'FRC:Kingdom of Holland', CHE: 'FRC:Swiss Confederation (French protectorate)',
+    FRA: 'FRA', FR_OVERSEAS: 'FRA', SAVOY: 'FRA', ALSACE: 'FRA', BEL: 'FRA', LUX: 'FRA', NLD: 'FRC:Kingdom of Holland', CHE: 'FRC:Swiss Confederation (French protectorate)',
     GBR: 'GBR', IRL: 'GBR', IMN: 'GBR', JEY: 'GBR', MLT: 'GBR', GIB: 'GBR',
     RHINE_L: 'FRA', BERG: 'FRC:Grand Duchy of Berg', MAGDEBURG: 'FRC:Kingdom of Westphalia', HANOVER: 'FRC:Kingdom of Westphalia', HESSE: 'FRC:Confederation of the Rhine',
     SAXONY: 'FRC:Kingdom of Saxony (Rhine Confederation)', MECKLENBURG: 'FRC:Mecklenburg (Rhine Confederation)', SOUTH_DE: 'FRC:Bavaria & Württemberg (Rhine Confederation)',
-    HOLSTEIN: 'DEN', BRANDENBURG: 'PRU', PRU_EAST: 'PRU', POSEN: 'FRC:Duchy of Warsaw', WARSAW: 'FRC:Duchy of Warsaw', W_GALICIA: 'AUT', GALICIA: 'AUT', RUTHENIA: 'AUT',
+    HOLSTEIN: 'DEN', BRANDENBURG: 'PRU', PRU_EAST: 'PRU', CORRIDOR: 'PRU', UPPER_SIL: 'PRU', E_PRUSSIA: 'PRU', KONIGSBERG: 'PRU', VOLHYNIA: 'RUS', POSEN: 'FRC:Duchy of Warsaw', WARSAW: 'FRC:Duchy of Warsaw', W_GALICIA: 'AUT', GALICIA_W: 'AUT', GALICIA: 'AUT', BUKOVINA: 'AUT', RUTHENIA: 'AUT',
     DNK: 'DEN', NOR: 'DEN', ISL: 'DEN', FRO: 'DEN', GRL: 'DEN', SWE: 'SWE', FIN: 'SWE', ALD: 'SWE',
     IT_PIED: 'FRA', IT_SARD: 'SAR', IT_LOMB: 'FRC:Kingdom of Italy', IT_TRIESTE: 'AUT', IT_VEN: 'FRC:Kingdom of Italy', IT_TREN: 'FRC:Kingdom of Bavaria',
     IT_ROMAGNA: 'FRC:Kingdom of Italy', IT_DUCHY: 'FRA', IT_MARCHE: 'PAP', IT_LAZIO: 'PAP', IT_SOUTH: 'FRC:Kingdom of Naples', IT_SICILY: 'NAP',
@@ -185,11 +205,11 @@
     LSO: L('Sotho chiefdoms'), SWZ: L('Swazi kingdom'), CAPE: 'GBR:Cape Colony', NATAL: L('Zulu Kingdom'), ORANGE: L('Sotho & Griqua lands'), TRANSVAAL: L('Ndebele & Pedi lands'),
     // Asia & Oceania
     BENGAL: 'GBR:British India (East India Company)', MADRAS: 'GBR:British India (East India Company)', MARATHA: L('Maratha Confederacy & Rajput states'),
-    PUNJAB: 'SIKH', KASHMIR: L('Durrani Kashmir'), ASSAM: L('Ahom Kingdom'), SIKKIM: L('Sikkim'), GOA: 'POR', PONDICHERRY: 'GBR:Pondichéry (British occupied)',
+    PUNJAB: 'SIKH', PUNJAB_PK: 'SIKH', KASHMIR: L('Durrani Kashmir'), KASHMIR_PK: L('Durrani Kashmir'), ASSAM: L('Ahom Kingdom'), SIKKIM: L('Sikkim'), GOA: 'POR', PONDICHERRY: 'GBR:Pondichéry (British occupied)',
     SINDH: L('Talpur Sindh'), KALAT: L('Khanate of Kalat'), BGD: 'GBR:British India (East India Company)', LKA: 'GBR:Ceylon', NPL: L('Gorkha Nepal'), BTN: L('Bhutan'),
-    MMR: L('Konbaung Burma'), THA: L('Siam'), LAO: L('Lao kingdoms (Siamese vassals)'), KHM: L('Cambodia'), VNM: L('Đại Việt / Đại Nam (Nguyễn)'), COCHINCHINA: L('Đại Việt / Đại Nam (Nguyễn)'),
+    MMR: L('Konbaung Burma'), THA: L('Siam'), LAO: L('Lao kingdoms (Siamese vassals)'), KHM: L('Cambodia'), VNM: L('Đại Việt / Đại Nam (Nguyễn)'), COCHINCHINA: L('Đại Việt / Đại Nam (Nguyễn)'), ANNAM_S: L('Đại Việt / Đại Nam (Nguyễn)'),
     MYS: L('Malay sultanates'), SGP: L('Johor Sultanate'), BRN: L('Sultanate of Brunei'), IDN: 'FRC:Dutch East Indies (Kingdom of Holland)', TLS: 'POR', PHL: 'ESP',
-    CHN: 'QNG', JIANGNAN: 'QNG', XINJIANG: 'QNG', MNG: 'QNG', TWN: 'QNG', HKG: 'QNG', MAC: 'POR', KOR: L('Joseon Korea'), PRK: L('Joseon Korea'), JPN: 'JPN',
+    CHN: 'QNG', JIANGNAN: 'QNG', MANCHURIA: 'QNG', NORTH_CHINA: 'QNG', SOUTH_COAST: 'QNG', TIBET: 'QNG', XINJIANG: 'QNG', MNG: 'QNG', TWN: 'QNG', HKG: 'QNG', MAC: 'POR', KOR: L('Joseon Korea'), PRK: L('Joseon Korea'), JPN: 'JPN',
     KAZ: L('Kazakh Hordes'), UZB: L('Khanates of Bukhara, Khiva & Kokand'), TKM: L('Turkmen tribes'), KGZ: L('Khanate of Kokand'), TJK: L('Emirate of Bukhara'),
     AUS: 'GBR:New South Wales', NZL: L('Māori iwi'), PNG: L('Papuan peoples'), FJI: L('Fijian chiefdoms'), SLB: L('Solomon Islanders'), VUT: L('Ni-Vanuatu'), NCL: L('Kanak chiefdoms'),
     PYF: L('Kingdom of Tahiti'), WSM: L('Samoan chiefdoms'), TON: L('Tongan chiefdoms'), KIR: L('Gilbertese'), FSM: L('Carolinians'), PLW: L('Palau'),

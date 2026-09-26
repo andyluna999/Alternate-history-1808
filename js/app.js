@@ -226,7 +226,7 @@
   const TERRITORIES = [
     ['US-TX', 'Texas'], ['US-CA', 'Alta California'], ['NEWMEX', 'New Mexico'], ['GBASIN', 'Utah & Nevada'], ['GTM', 'Guatemala'],
     ['YUCATAN', 'Yucatán'], ['CUB', 'Cuba'], ['PRI', 'Puerto Rico'], ['US-FL', 'Florida'], ['US-VA', 'Virginia (the U.S. South)'],
-    ['US-WA', 'Washington (Oregon Country)'], ['US-AK', 'Alaska'], ['COL', 'Colombia'],
+    ['US-WA', 'Washington (Oregon Country)'], ['US-AK', 'Alaska'], ['COL', 'Colombia'], ['PAN', 'Panama'], ['US-HI', 'Hawaii'], ['PHL', 'Philippines'],
   ];
   const LANDMARKS = [
     ['hidalgo', 'A mass revolt in the Bajío', null, 'Grito de Dolores, 1810'],
@@ -247,6 +247,14 @@
     ['canal', 'A Mexican interoceanic route'],
     ['war_1898', 'The U.S. fights Spain over Cuba', 'The Spanish–American War', '1898'],
     ['war_1898', 'Mexico fights Spain over Cuba', 'The Spanish–Mexican War'],
+    ['mx_revolution', 'A Mexican revolutionary civil war', 'A decade of civil war', '1910'],
+    ['crisis_1914', 'U.S. occupies or conquers the Mexican north', 'War over the north'],
+    ['oil_nat', 'Mexico nationalizes its oil', null, '1938'],
+    ['ww1_end', 'Allied victory in the Great War', 'Allied victory: Versailles, Saint-Germain, Trianon', '1918'],
+    ['north_referendum', 'Independence referendum in the north'],
+    ['cuba_rev', 'A Cuban revolution', null, '1959'],
+    ['cam_late', 'Central America leaves Mexico after 1945'],
+    ['ussr_end', 'The Soviet Union dissolves by 2000', null, '1991'],
   ];
 
   function renderOdds() {
@@ -333,7 +341,7 @@
     const last = yrs[yrs.length - 1];
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Population of Mexico and the United States, simulated vs our timeline">
       <g class="grid">${yS.ticks(4).map((t) => `<line x1="${m.l}" x2="${W - m.r}" y1="${yS(t)}" y2="${yS(t)}"/><text x="${m.l - 4}" y="${yS(t) + 4}" text-anchor="end">${t}</text>`).join('')}</g>
-      ${[1810, 1850, 1900].map((t) => `<text x="${x(t)}" y="${H - 4}" text-anchor="middle">${t}</text>`).join('')}
+      ${[1810, 1850, 1900, 1950, 2000].map((t) => `<text x="${x(t)}" y="${H - 4}" text-anchor="middle">${t}</text>`).join('')}
       <path d="${otl(AH.OTL.usa)}" fill="none" stroke="${cu}" stroke-width="1.5" stroke-dasharray="4 3"/>
       <path d="${otl(AH.OTL.mexico)}" fill="none" stroke="${cm}" stroke-width="1.5" stroke-dasharray="4 3"/>
       <path d="${line((d) => d.v.us_pop)}" fill="none" stroke="${cu}" stroke-width="2"/>

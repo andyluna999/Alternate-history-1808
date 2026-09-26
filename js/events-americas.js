@@ -481,7 +481,7 @@
       { title: 'Rising suppressed', w: (s) => 0.2 + 0.4 * s.v.mx_mil, text: 'Mexican troops shipped from Veracruz break the siege of Mérida.', fx: (s) => { if (s.oid('YUCATAN') === 'YUC') s.own(['YUCATAN', 'QROO'], 'MEX'); } },
     ] });
 
-  ev({ id: 'chan_santa_cruz_end', win: [1880, 1900], m: 5, place: 'merida', kind: 'war',
+  ev({ id: 'chan_santa_cruz_end', win: [1880, 1935], m: 5, place: 'merida', kind: 'war',
     when: (s) => s.oid('QROO') === 'NATIVE', p: (s) => 0.04 + 0.1 * s.v.mx_mil,
     title: 'Mexican troops take Chan Santa Cruz',
     fx: (s) => s.own('QROO', 'MEX') });
@@ -742,14 +742,14 @@
     text: 'With the French gone and U.S. arms flowing south, the empire collapses. A republic is restored.',
     fx: (s) => { s.set('republic'); s.name('MEX', 'Mexican Republic'); } });
 
-  ev({ id: 'mx_republic', win: [1830, 1900], m: 9, place: 'mexico', kind: 'revolt',
+  ev({ id: 'mx_republic', win: [1830, 2000], m: 9, place: 'mexico', kind: 'revolt',
     when: (s) => mex(s, 'MEX') && isMonarchy(s) && s.f.independent,
     p: (s) => 0.004 + 0.15 * Math.max(0, 0.42 - s.v.mx_stab) + (s.f.creole_emperor ? 0.03 : 0),
     title: 'The monarchy falls',
     text: 'After a pronunciamiento in the capital\'s garrison, the king sails into exile on a British packet boat. Congress proclaims the Mexican Republic.',
     fx: (s) => { s.set('republic'); s.name('MEX', 'Mexican Republic'); s.add('mx_stab', -0.05); } });
 
-  ev({ id: 'empire_title', win: [1860, 1890], m: 1, place: 'mexico', kind: 'politics',
+  ev({ id: 'empire_title', win: [1860, 1930], m: 1, place: 'mexico', kind: 'politics',
     when: (s) => mex(s, 'MEX') && isMonarchy(s) && s.f.independent && s.v.mx_stab > 0.62 && s.oid('GTM') === 'MEX',
     p: 0.1,
     title: 'The kingdom becomes an empire',
@@ -876,7 +876,7 @@
       { title: 'Spain sells the islands to Germany', w: (s) => (s.f.us_empire ? 0 : 0.3), fx: (s) => s.own('PHL', 'GER') },
     ] });
 
-  ev({ id: 'hawaii', win: [1887, 1900], m: 8, place: 'honolulu', kind: 'colonial',
+  ev({ id: 'hawaii', win: [1887, 1959], m: 8, place: 'honolulu', kind: 'colonial',
     when: (s) => s.oid('US-HI') === 'LOCAL',
     p: (s) => (s.f.us_empire ? 0.6 : s.oid('US-CA') === 'USA' ? 0.15 : 0.08),
     title: 'The end of the Hawaiian Kingdom',
